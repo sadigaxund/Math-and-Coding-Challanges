@@ -1,9 +1,11 @@
 package Data;
+
 import java.util.Set;
 
-public interface Worker
-{
-    void put (int x, int y);
-    Set<Point> get ();
-    void step ();
+public interface Worker {
+    void put(int x, int y);
+
+    Set<Point> get();
+
+    void step();
 }

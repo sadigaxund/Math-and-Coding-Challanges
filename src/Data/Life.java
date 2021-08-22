@@ -1,5 +1,14 @@
 package Data;
 
+import Hashes.Hash_Long;
+import Hashes.Hash_LongPoint;
+import Hashes.Hash_LongPoint3;
+import Hashes.Hash_LongPoint4;
+import Hashes.Hash_LongPoint5;
+import Hashes.Hash_LongPoint6;
+import Hashes.Hash_LongPoint7;
+import Hashes.Hash_Reference;
+
 public class Life {
     private static void put(Worker w, String[] p) {
 	for (int y = 0; y < p.length; y++) {
