@@ -8,7 +8,7 @@ import java.util.Set;
 
 import util.Point;
 
-final class Hash_HomeMade4 extends Worker
+final class Hash extends Worker
 {
     public static final int HASH_CAPACITY = 256*1024;
 
@@ -21,7 +21,7 @@ final class Hash_HomeMade4 extends Worker
     private ListedCell [] toReset = new ListedCell [128];
     private ListedCell [] toSet = new ListedCell [128];
     
-    public Hash_HomeMade4 (Hasher hash)
+    public Hash (Hasher hash)
     {
         this.hasher = hash;
         this.name = getClass().getName () + ":" + hash.getClass ().getName ();
