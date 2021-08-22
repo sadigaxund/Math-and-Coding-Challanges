@@ -14,4 +14,11 @@
 	<natures>
 		<nature>org.eclipse.jdt.core.javanature</nature>
 	</natures>
+	<linkedResources>
+		<link>
+			<name>src/util</name>
+			<type>2</type>
+			<locationURI>PARENT-2-PROJECT_LOC/AppData/Local/Temp/Rar$DRa10692.33082/article-life-master/util</locationURI>
+		</link>
+	</linkedResources>
 </projectDescription>
