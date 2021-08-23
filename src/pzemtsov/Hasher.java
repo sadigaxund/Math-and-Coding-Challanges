@@ -1,6 +1,7 @@
 package pzemtsov;
 
-public abstract class Hasher
-{
-    public abstract int hashCode (long key);
+public class Hasher {
+    public int hashCode(long key) {
+	return (int) (key % 946840871);
+    }
 }

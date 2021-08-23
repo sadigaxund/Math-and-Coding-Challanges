@@ -6,9 +6,9 @@ import static util.LongUtil.fromPoint;
 import java.util.HashSet;
 import java.util.Set;
 
-import util.Point;
+import util.HashPoint;
 
-final class Hash extends Worker
+public final class Hash extends Worker
 {
     public static final int HASH_CAPACITY = 256*1024;
 
@@ -114,9 +114,9 @@ final class Hash extends Worker
     }
     
     @Override
-    public Set<Point> get ()
+    public Set<HashPoint> get ()
     {
-        final HashSet<Point> result = new HashSet<Point> ();
+        final HashSet<HashPoint> result = new HashSet<HashPoint> ();
         for (ListedCell cell = full_list.next; cell != full_list; cell = cell.next) {
             if (cell.live) {
                 result.add (cell.toPoint ());

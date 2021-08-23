@@ -3,10 +3,10 @@ package pzemtsov;
 import java.util.HashSet;
 import java.util.Set;
 
-import util.Point;
+import util.HashPoint;
 
 public class Life {
-    private static void put(Worker w, String[] p) {
+    public static void put(Worker w, String[] p) {
 	for (int y = 0; y < p.length; y++) {
 	    for (int x = 0; x < p[y].length(); x++) {
 		if (p[y].charAt(x) == '#') {
@@ -28,14 +28,14 @@ public class Life {
 	put(w, ACORN);
 
 	for (int i = 0; i < K; i++) {
-	    Set<Point> set0 = w0.get();
-	    Set<Point> set1 = w.get();
+	    Set<HashPoint> set0 = w0.get();
+	    Set<HashPoint> set1 = w.get();
 	    if (!set0.equals(set1)) {
 		System.out.println("Not equals " + w.getClass() + " at " + i);
 		System.out.println("w0 = " + set0);
 		System.out.println("w  = " + set1);
-		HashSet<Point> s0 = new HashSet<Point>(set0);
-		HashSet<Point> s1 = new HashSet<Point>(set1);
+		HashSet<HashPoint> s0 = new HashSet<HashPoint>(set0);
+		HashSet<HashPoint> s1 = new HashSet<HashPoint>(set1);
 		s0.removeAll(set1);
 		s1.removeAll(set0);
 		System.out.println("w0 - w = " + s0);
@@ -96,18 +96,36 @@ public class Life {
 	return mem / (1024 * 1024.0);
     }
 
-    private static class Hasher6 extends Hasher {
-
-	@Override
-	public int hashCode(long key) {
-	    return (int) (key % 946840871);
-	}
-    }
-
     public static void main(String[] args) throws Exception {
-
-	while (true)
-	    test(new Hash(new Hasher6()));
-
+	Hash map = new Hash(new Hasher());
+	map.reset();
+	Life.put(map, ACORN);
+	Set<HashPoint> pts = map.get();
+	HashSet<HashPoint> hash_pts = new HashSet<>(pts);
+	System.out.println(hash_pts.toString());
+	
+	map.step();
+	hash_pts = new HashSet<>(map.get());
+	System.out.println(hash_pts.toString());
+	
+	map.step();
+	hash_pts = new HashSet<>(map.get());
+	System.out.println(hash_pts.toString());
+	map.step();
+	hash_pts = new HashSet<>(map.get());
+	System.out.println(hash_pts.toString());
+	map.step();
+	hash_pts = new HashSet<>(map.get());
+	System.out.println(hash_pts.toString());
+	map.step();
+	hash_pts = new HashSet<>(map.get());
+	System.out.println(hash_pts.toString());
+	map.step();
+	hash_pts = new HashSet<>(map.get());
+	System.out.println(hash_pts.toString());
+	map.step();
+	hash_pts = new HashSet<>(map.get());
+	System.out.println(hash_pts.toString());
+	
     }
 }

@@ -32,12 +32,18 @@ import java.awt.Robot;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.swing.JFrame;
 
 import Utils.JHardware;
+import pzemtsov.Hash;
+import pzemtsov.Hasher;
+import pzemtsov.Life;
+import util.HashPoint;
 
-public class MainFrame extends JFrame {
+public class MainFrame extends JFrame implements Runnable {
     /**
      * 
      */
@@ -79,6 +85,10 @@ public class MainFrame extends JFrame {
 
     private Surface surf;
 
+    private static final String[] ACORN = new String[] { "##  ###", ":::#:::", ":#" };
+    // private HashSet<Point> hashedPoints;
+    private Hash map;
+
     public MainFrame() {
 	try {
 	    initUI();
@@ -94,6 +104,18 @@ public class MainFrame extends JFrame {
 	setSize(WINDOW_WIDTH, WINDOW_HEIGHT);
 	setLocationRelativeTo(null);
 	setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+	map = new Hash(new Hasher());
+	map.reset();
+	Life.put(map, ACORN);
+	surf.setHashedPoints(new HashSet<>(map.get())); // TODO: if this part repeats change it to method
+
+    }
+
+    private void step() {
+	map.step();
+	surf.setHashedPoints(new HashSet<>(map.get()));
+	surf.repaint();
     }
 
     private void initMouseAction() throws AWTException {
@@ -105,30 +127,23 @@ public class MainFrame extends JFrame {
 	boolean hold = true;
 
 	surf.addMouseMotionListener(new MouseMotionAdapter() {
-	    int prevX = initX;
-	    int prevY = initY;
+
+	    HashPoint prevCoords = new HashPoint(initX, initY);
 
 	    @Override
 	    public void mouseMoved(MouseEvent e) {
-		int currX = e.getX();
-		int currY = e.getY();
-		prevX = currX;
-		prevY = currY;
-
+		prevCoords = new HashPoint(e.getX(), e.getY());
 	    }
 
 	    @Override
 	    public void mouseDragged(MouseEvent e) {
-		int currX = e.getX();
-		int currY = e.getY();
+		HashPoint currCoords = new HashPoint(e.getX(), e.getY());
 
-		int diffX = (currX - prevX) ;
-		int diffY = (currY - prevY) ;
-
-		System.out.println(diffX + ", " + diffY);
 		if (hold) {
-		    surf.setLocation(surf.getX() + diffX, surf.getY() + diffY);
+		    surf.addOffset(currCoords.x - prevCoords.x, currCoords.y - prevCoords.y);
+		    surf.repaint();
 		}
+		prevCoords = currCoords;
 
 	    }
 	});
@@ -141,7 +156,24 @@ public class MainFrame extends JFrame {
 	    public void run() {
 		MainFrame ex = new MainFrame();
 		ex.setVisible(true);
+		new Thread(ex).start();
 	    }
 	});
+    }
+
+    @Override
+    public void run() {
+	while (true) {
+	    try {
+		Thread.sleep(1000);
+	    } catch (InterruptedException e) {
+	    }
+
+	    step();
+	}
+    }
+
+    void println(String str) {
+	System.out.println(str);
     }
 }

@@ -1,6 +1,6 @@
 package pzemtsov;
 import util.LongUtil;
-import util.Point;
+import util.HashPoint;
 
 
 public final class ListedCell
@@ -25,7 +25,7 @@ public final class ListedCell
         this (position, neighbours, false);
     }
     
-    public Point toPoint ()
+    public HashPoint toPoint ()
     {
         return LongUtil.toPoint (position);
     }
