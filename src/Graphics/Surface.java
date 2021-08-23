@@ -97,10 +97,9 @@ public class Surface extends JPanel {
 		boolean check_up_y = (rect.y + rect.height < -check_margin);
 		boolean check_down_y = (rect.y > getHeight() + check_margin);
 
-		if (check_down_y || check_left_x || check_right_x || check_up_y) 
+		if (check_down_y || check_left_x || check_right_x || check_up_y)
 		    continue;
-		
-		
+
 		g2d.draw(rect);
 	    }
 
@@ -122,7 +121,6 @@ public class Surface extends JPanel {
 	super.paintComponent(g);
 	doDrawing(g);
     }
-    
 
     /**
      * @return the hashedPoints
@@ -164,5 +162,26 @@ public class Surface extends JPanel {
 	hashedPoints = new HashSet<>(map.get());
 	repaint();
     }
-    
+
+    /**
+     * @return the grid_size
+     */
+    public int getGridSize() {
+	return grid_size;
+    }
+
+    /**
+     * @param grid_size
+     *                      the grid_size to set
+     */
+    public void setGridSize(int size) {
+	grid_size = size;
+
+	if (grid_size < 5)
+	    grid_size = 5;
+	if(grid_size > 20)
+	    grid_size = 20;
+
+    }
+
 }

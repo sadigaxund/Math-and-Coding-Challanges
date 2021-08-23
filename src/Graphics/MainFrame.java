@@ -29,27 +29,38 @@ package Graphics;
 import java.awt.AWTException;
 import java.awt.EventQueue;
 import java.awt.FlowLayout;
+import java.awt.Graphics2D;
+import java.awt.Image;
+import java.awt.Point;
 import java.awt.Robot;
+import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
+import java.awt.event.MouseWheelEvent;
+import java.awt.event.MouseWheelListener;
+import java.awt.image.BufferedImage;
 import java.util.HashSet;
 import java.util.Set;
 
 import javax.swing.GroupLayout;
+import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
 import javax.swing.UIManager;
 import javax.swing.GroupLayout.Alignment;
+import javax.swing.Icon;
 import javax.swing.LayoutStyle.ComponentPlacement;
+import javax.swing.border.BevelBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import Utils.JHardware;
+import Utils.JImages;
 import pzemtsov.Hash;
 import pzemtsov.Hasher;
 import pzemtsov.Life;
@@ -97,6 +108,8 @@ public class MainFrame extends JFrame implements Runnable {
 
     public static final int BOTTOM_PANEL_HEIGHT = 40;
 
+    public boolean PAUSE = true;
+
     private Surface surf;
 
     public MainFrame() {
@@ -134,6 +147,20 @@ public class MainFrame extends JFrame implements Runnable {
 			.addComponent(surf, GroupLayout.DEFAULT_SIZE, WINDOW_HEIGHT, Short.MAX_VALUE).addComponent(
 				panel, GroupLayout.PREFERRED_SIZE, BOTTOM_PANEL_HEIGHT, GroupLayout.PREFERRED_SIZE)));
 	getContentPane().setLayout(groupLayout);
+
+	surf.addMouseWheelListener(new MouseWheelListener() {
+	    public void mouseWheelMoved(MouseWheelEvent e) {
+
+		int notches = e.getWheelRotation();
+		if (notches < 0) {// UP
+		    surf.setGridSize(surf.getGridSize() + 1);
+		} else {
+		    surf.setGridSize(surf.getGridSize() - 1);
+		}
+		surf.repaint();
+	    }
+	});
+
 	panel.setLayout(null);
 	int margin = 10;
 	int component_height = BOTTOM_PANEL_HEIGHT - margin * 2;
@@ -151,13 +178,71 @@ public class MainFrame extends JFrame implements Runnable {
 	slider.setMaximum(2500);
 	panel.add(slider);
 
-	JLabel lblMs = new JLabel("0000 ms");
+	JLabel lblMs = new JLabel("1000 ms");
 	lblMs.setBounds(slider.getX() + slider.getWidth() + margin, margin, 50, component_height - 2);
 	panel.add(lblMs);
 
-	JLabel label = new JLabel("");
-	label.setBounds(358, 15, 0, 0);
+	JLabel label = new JLabel("") {
+	    @Override
+	    public boolean isOptimizedDrawingEnabled() {
+		return false;
+	    }
+	};
+	label.setBounds(lblMs.getX() + lblMs.getWidth() + margin * 2 + 1, margin - 2, 25, 24);
+	Image smileFaceIcon = JImages.scaleImage(new ImageIcon("./res/play.png").getImage(), label.getWidth(),
+		label.getHeight());
+	label.setIcon(new ImageIcon(smileFaceIcon));
+
+	label.addMouseListener(new MouseAdapter() {
+
+	    @Override
+	    public void mouseClicked(MouseEvent arg0) {
+		PAUSE = !PAUSE;
+
+		Image smileFaceIcon = JImages.scaleImage(
+			new ImageIcon("./res/" + (PAUSE ? "play" : "pause") + ".png").getImage(), label.getWidth(),
+			label.getHeight());
+		label.setIcon(new ImageIcon(smileFaceIcon));
+	    }
+	});
 	panel.add(label);
+
+	JPanel panel_2 = new JPanel() {
+	    @Override
+	    public boolean isOptimizedDrawingEnabled() {
+		return false;
+	    }
+	};
+	panel_2.setBorder(new BevelBorder(BevelBorder.RAISED, null, null, null, null));
+	label.addMouseListener(new MouseAdapter() {
+	    @Override
+	    public void mousePressed(MouseEvent e) {
+		panel_2.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
+		Image smileFaceIcon = JImages.scaleImage(convertIconToImage(label.getIcon()),
+			((int) (label.getWidth() * 0.9)), ((int) (label.getHeight() * 0.9)));
+		label.setIcon(new ImageIcon(smileFaceIcon));
+
+	    }
+
+	    @Override
+	    public void mouseReleased(MouseEvent e) {
+		panel_2.setBorder(new BevelBorder(BevelBorder.RAISED, null, null, null, null));
+		Image smileFaceIcon = JImages.scaleImage(convertIconToImage(label.getIcon()), label.getWidth(),
+			label.getHeight());
+		label.setIcon(new ImageIcon(smileFaceIcon));
+	    }
+
+	    @Override
+	    public void mouseExited(MouseEvent e) {
+		panel_2.setBorder(new BevelBorder(BevelBorder.RAISED, null, null, null, null));
+		Image smileFaceIcon = JImages.scaleImage(convertIconToImage(label.getIcon()), label.getWidth(),
+			label.getHeight());
+		label.setIcon(new ImageIcon(smileFaceIcon));
+	    }
+	});
+
+	panel_2.setBounds(lblMs.getX() + lblMs.getWidth() + margin * 2 - 2, margin - 5, 31, 25 + 5);
+	panel.add(panel_2);
 	getContentPane().setLayout(groupLayout);
 
 	slider.addChangeListener(new ChangeListener() {
@@ -198,33 +283,26 @@ public class MainFrame extends JFrame implements Runnable {
 
 	    }
 	});
-	surf.addComponentListener(new ComponentListener() {
-
-	    @Override
-	    public void componentShown(ComponentEvent e) {
-		// TODO Auto-generated method stub
-
-	    }
-
+	surf.addComponentListener(new ComponentAdapter() {
 	    @Override
 	    public void componentResized(ComponentEvent e) {
 		surf.repaint();
-
-	    }
-
-	    @Override
-	    public void componentMoved(ComponentEvent e) {
-		// TODO Auto-generated method stub
-
-	    }
-
-	    @Override
-	    public void componentHidden(ComponentEvent e) {
-		// TODO Auto-generated method stub
-
 	    }
 	});
 
+    }
+
+    public Image convertIconToImage(Icon icon) {
+	if (icon instanceof ImageIcon) {
+	    return ((ImageIcon) icon).getImage();
+	} else {
+	    int width = icon.getIconWidth();
+	    int height = icon.getIconHeight();
+	    BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+	    Graphics2D g2 = (Graphics2D) image.getGraphics();
+	    icon.paintIcon(null, g2, 0, 0);
+	    return image;
+	}
     }
 
     public static void main(String[] args) {
@@ -246,6 +324,8 @@ public class MainFrame extends JFrame implements Runnable {
 		Thread.sleep(LATENCY);
 	    } catch (InterruptedException e) {
 	    }
+	    if (PAUSE)
+		continue;
 
 	    surf.step();
 	}
