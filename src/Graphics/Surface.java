@@ -56,7 +56,6 @@ public class Surface extends JPanel {
     private int window_width;
     private int window_height;
 
-    private Point index_offset;
     private Point pixel_offset;
 
     private static final String[] ACORN = new String[] { "##  ###", ":::#:::", ":#" };
@@ -67,9 +66,11 @@ public class Surface extends JPanel {
 	super();
 	this.window_height = window_heigth;
 	this.window_width = window_width;
-	index_offset = new Point(-gridmap_width / 2 + 1, -gridmap_height / 2 + 1);
+	Point index_offset = new Point(-gridmap_width / 2 + 1, -gridmap_height / 2 + 1);
+
 	pixel_offset = new Point(index_offset.x * grid_size + window_width / 2 - 64,
 		index_offset.y * grid_size + window_heigth / 2 - 64);
+
 	map = new Hash(new Hasher());
 	map.reset();
 	Life.put(map, ACORN, index_offset);
@@ -80,7 +81,6 @@ public class Surface extends JPanel {
 	Graphics2D g2d = (Graphics2D) g;
 	int w = getWidth();
 	int h = getHeight();
-
 	// Draw Background
 	g2d.setColor(darkestBlue);
 	g2d.fillRect(0, 0, w, h);
@@ -175,12 +175,17 @@ public class Surface extends JPanel {
      *                      the grid_size to set
      */
     public void setGridSize(int size) {
+
+	Point indexOffset = new Point(pixel_offset.x / grid_size, pixel_offset.y / grid_size);
+
 	grid_size = size;
 
 	if (grid_size < 5)
 	    grid_size = 5;
-	if(grid_size > 20)
+	if (grid_size > 20)
 	    grid_size = 20;
+
+	pixel_offset = new Point(indexOffset.x * grid_size, indexOffset.y * grid_size);
 
     }
 
