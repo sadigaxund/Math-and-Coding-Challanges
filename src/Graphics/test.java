@@ -86,7 +86,16 @@ public class test extends JFrame {
 	panel.setBorder(UIManager.getBorder("RadioButton.border"));
 
 	JPanel panel_1 = new JPanel();
-	panel_1
+	panel_1.addMouseWheelListener(new MouseWheelListener() {
+	    public void mouseWheelMoved(MouseWheelEvent e) {
+		
+		int notches = e.getWheelRotation();
+		if (notches < 0) {// UP
+		} else {
+		}
+		
+	    }
+	});
 	FlowLayout flowLayout_1 = (FlowLayout) panel_1.getLayout();
 	flowLayout_1.setHgap(0);
 	flowLayout_1.setVgap(0);
@@ -133,9 +142,8 @@ public class test extends JFrame {
 
 	JLabel label = new JLabel("");
 	panel_2.add(label);
-	// Image smileFaceIcon = JImages.scaleImage(new
-	// ImageIcon("./res/play.png").getImage(), label.getWidth(),
-	// label.getHeight());
+//	Image smileFaceIcon = JImages.scaleImage(new ImageIcon("./res/play.png").getImage(), label.getWidth(),
+//		label.getHeight());
 	// label.setIcon(new ImageIcon(smileFaceIcon));
 
 	label.addMouseListener(new MouseAdapter() {

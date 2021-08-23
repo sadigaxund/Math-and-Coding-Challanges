@@ -12,6 +12,7 @@ import javax.swing.JPanel;
 import pzemtsov.Hash;
 import pzemtsov.Hasher;
 import pzemtsov.Life;
+import pzemtsov.Worker;
 import util.HashPoint;
 
 /***************************************************************************
@@ -59,6 +60,11 @@ public class Surface extends JPanel {
     private Point pixel_offset;
 
     private static final String[] ACORN = new String[] { "##  ###", ":::#:::", ":#" };
+    private static final String[] GUN = new String[] { "                        #             ",
+	    "                      # #             ", "            ##      ##            ##",
+	    "           #   #    ##            ##", "##        #     #   ##", "##        #   # ##    # #",
+	    "          #     #       #", "           #   #", "            ##" };
+
     private HashSet<HashPoint> hashedPoints;
     private Hash map;
 
@@ -73,7 +79,7 @@ public class Surface extends JPanel {
 
 	map = new Hash(new Hasher());
 	map.reset();
-	Life.put(map, ACORN, index_offset);
+	put(map, GUN, index_offset);
 	hashedPoints = new HashSet<>(map.get());
     }
 
@@ -85,27 +91,30 @@ public class Surface extends JPanel {
 	g2d.setColor(darkestBlue);
 	g2d.fillRect(0, 0, w, h);
 
-	g2d.setColor(new Color(145, 163, 176));
-	int sum = 0;
-	for (int i = 0; i < gridmap_width; i++)
-	    for (int j = 0; j < gridmap_height; j++) {
-		// RENDER OPTIMIZATION
-		Rectangle rect = createRectangle(new Point(i, j), pixel_offset, grid_size);
-		int check_margin = 10;
-		boolean check_left_x = (rect.x + rect.width < -check_margin);
-		boolean check_right_x = (rect.x > getWidth() + check_margin);
-		boolean check_up_y = (rect.y + rect.height < -check_margin);
-		boolean check_down_y = (rect.y > getHeight() + check_margin);
-
-		if (check_down_y || check_left_x || check_right_x || check_up_y)
-		    continue;
-
+	/* Render only visible dead cells */
+	g2d.setColor(new Color(0, 80, 110));
+	int x_off = pixel_offset.x % grid_size;
+	int y_off = pixel_offset.y % grid_size;
+	for (int i = 0; i < window_width / grid_size + 1; i++)
+	    for (int j = 0; j < window_height / grid_size; j++) {
+		Rectangle rect = createRectangle(new Point(i, j), new Point(x_off, y_off), grid_size);
 		g2d.draw(rect);
 	    }
 
+	/* Render Alive Cells all over the coordinate system */
 	g2d.setColor(new Color(255, 255, 255));
 	for (HashPoint pt : hashedPoints) {
-	    g2d.fill(createRectangle(new Point(pt.x, pt.y), pixel_offset, grid_size));
+	    // RENDER OPTIMIZATION
+	    Rectangle rect = createRectangle(new Point(pt.x, pt.y), pixel_offset, grid_size);
+	    int check_margin = 10;
+	    boolean check_left_x = (rect.x + rect.width < -check_margin);
+	    boolean check_right_x = (rect.x > getWidth() + check_margin);
+	    boolean check_up_y = (rect.y + rect.height < -check_margin);
+	    boolean check_down_y = (rect.y > getHeight() + check_margin);
+
+	    if (check_down_y || check_left_x || check_right_x || check_up_y)
+		continue;
+	    g2d.fill(rect);
 	}
     }
 
@@ -120,6 +129,20 @@ public class Surface extends JPanel {
     public void paintComponent(Graphics g) {
 	super.paintComponent(g);
 	doDrawing(g);
+    }
+
+    public static void put(Worker w, String[] p) {
+	put(w, p, new Point(0, 0));
+    }
+
+    public static void put(Worker w, String[] p, Point offset) {
+	for (int y = 0; y < p.length; y++) {
+	    for (int x = 0; x < p[y].length(); x++) {
+		if (p[y].charAt(x) == '#') {
+		    w.put(x - offset.x, y - offset.y);
+		}
+	    }
+	}
     }
 
     /**

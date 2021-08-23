@@ -7,7 +7,7 @@ import util.HashPoint;
 public abstract class Worker {
     abstract void reset();
 
-    abstract void put(int x, int y);
+    public abstract void put(int x, int y);
 
     abstract Set<HashPoint> get();
 
