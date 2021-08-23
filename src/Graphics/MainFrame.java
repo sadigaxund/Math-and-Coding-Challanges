@@ -31,20 +31,16 @@ import java.awt.EventQueue;
 import java.awt.FlowLayout;
 import java.awt.Graphics2D;
 import java.awt.Image;
-import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.Robot;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.awt.image.BufferedImage;
-import java.util.HashSet;
-import java.util.Set;
-
 import javax.swing.GroupLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
@@ -54,16 +50,12 @@ import javax.swing.JSlider;
 import javax.swing.UIManager;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.Icon;
-import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.border.BevelBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import Utils.JHardware;
 import Utils.JImages;
-import pzemtsov.Hash;
-import pzemtsov.Hasher;
-import pzemtsov.Life;
 import util.HashPoint;
 
 public class MainFrame extends JFrame implements Runnable {
@@ -126,13 +118,13 @@ public class MainFrame extends JFrame implements Runnable {
 	setLocationRelativeTo(null);
 	setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-	JPanel panel = new JPanel();
+	JPanel BOTTOM_PANEL = new JPanel();
 
-	FlowLayout flowLayout = (FlowLayout) panel.getLayout();
+	FlowLayout flowLayout = (FlowLayout) BOTTOM_PANEL.getLayout();
 	flowLayout.setVgap(0);
 	flowLayout.setHgap(0);
 
-	panel.setBorder(UIManager.getBorder("RadioButton.border"));
+	BOTTOM_PANEL.setBorder(UIManager.getBorder("RadioButton.border"));
 
 	surf = new Surface(WINDOW_WIDTH, WINDOW_HEIGHT);
 	FlowLayout flowLayout_1 = (FlowLayout) surf.getLayout();
@@ -140,12 +132,13 @@ public class MainFrame extends JFrame implements Runnable {
 	flowLayout_1.setVgap(0);
 	GroupLayout groupLayout = new GroupLayout(getContentPane());
 	groupLayout.setHorizontalGroup(groupLayout.createParallelGroup(Alignment.LEADING)
-		.addComponent(panel, GroupLayout.DEFAULT_SIZE, WINDOW_WIDTH, Short.MAX_VALUE)
+		.addComponent(BOTTOM_PANEL, GroupLayout.DEFAULT_SIZE, WINDOW_WIDTH, Short.MAX_VALUE)
 		.addComponent(surf, GroupLayout.DEFAULT_SIZE, WINDOW_WIDTH, Short.MAX_VALUE));
 	groupLayout.setVerticalGroup(groupLayout.createParallelGroup(Alignment.TRAILING)
 		.addGroup(groupLayout.createSequentialGroup()
-			.addComponent(surf, GroupLayout.DEFAULT_SIZE, WINDOW_HEIGHT, Short.MAX_VALUE).addComponent(
-				panel, GroupLayout.PREFERRED_SIZE, BOTTOM_PANEL_HEIGHT, GroupLayout.PREFERRED_SIZE)));
+			.addComponent(surf, GroupLayout.DEFAULT_SIZE, WINDOW_HEIGHT, Short.MAX_VALUE)
+			.addComponent(BOTTOM_PANEL, GroupLayout.PREFERRED_SIZE, BOTTOM_PANEL_HEIGHT,
+				GroupLayout.PREFERRED_SIZE)));
 	getContentPane().setLayout(groupLayout);
 
 	surf.addMouseWheelListener(new MouseWheelListener() {
@@ -161,26 +154,36 @@ public class MainFrame extends JFrame implements Runnable {
 	    }
 	});
 
-	panel.setLayout(null);
+	BOTTOM_PANEL.setLayout(null);
 	int margin = 10;
 	int component_height = BOTTOM_PANEL_HEIGHT - margin * 2;
 	JLabel lblLatency = new JLabel("Latency:");
 	lblLatency.setBounds(margin, margin, 50, component_height - 2);
-	panel.add(lblLatency);
+	BOTTOM_PANEL.add(lblLatency);
 
-	JSlider slider = new JSlider();
-	slider.setBounds(lblLatency.getX() + lblLatency.getWidth() + margin, margin - 1, 150, component_height + 2);
-	slider.setValue(1000);
-	slider.setSnapToTicks(true);
-	slider.repaint();
-	slider.setMinorTickSpacing(100);
-	slider.setMinimum(5);
-	slider.setMaximum(2500);
-	panel.add(slider);
+	JSlider slider = new JSlider(JSlider.HORIZONTAL, 0, 3000, 1000);
+	slider.setBounds(lblLatency.getX() + lblLatency.getWidth() + margin, margin - 5, 200, component_height + 10);
+
+	// Turn on labels at major tick marks.
+	// FIXME: make pretty
+	slider.setMajorTickSpacing(1000);
+	slider.setMinorTickSpacing(500);
+	slider.setPaintTicks(true);
+	BOTTOM_PANEL.add(slider);
 
 	JLabel lblMs = new JLabel("1000 ms");
 	lblMs.setBounds(slider.getX() + slider.getWidth() + margin, margin, 50, component_height - 2);
-	panel.add(lblMs);
+	BOTTOM_PANEL.add(lblMs);
+
+	/********************
+	 * FIXME: overlapping problem<br>
+	 * PLAY BUTTON
+	 ********************/
+	Rectangle lbl_bounds = new Rectangle(lblMs.getX() + lblMs.getWidth() + margin * 2 + 1, margin - 2, 25, 24);
+	Rectangle panel_bounds = new Rectangle(lblMs.getX() + lblMs.getWidth() + margin * 2 - 2, margin - 5, 31,
+		25 + 5);
+	lbl_bounds.setLocation((WINDOW_WIDTH - lbl_bounds.width) / 2, lbl_bounds.y);
+	panel_bounds.setLocation((WINDOW_WIDTH - panel_bounds.width) / 2, panel_bounds.y);
 
 	JLabel label = new JLabel("") {
 	    @Override
@@ -188,7 +191,7 @@ public class MainFrame extends JFrame implements Runnable {
 		return false;
 	    }
 	};
-	label.setBounds(lblMs.getX() + lblMs.getWidth() + margin * 2 + 1, margin - 2, 25, 24);
+	label.setBounds(lbl_bounds);
 	Image smileFaceIcon = JImages.scaleImage(new ImageIcon("./res/play.png").getImage(), label.getWidth(),
 		label.getHeight());
 	label.setIcon(new ImageIcon(smileFaceIcon));
@@ -205,7 +208,7 @@ public class MainFrame extends JFrame implements Runnable {
 		label.setIcon(new ImageIcon(smileFaceIcon));
 	    }
 	});
-	panel.add(label);
+	BOTTOM_PANEL.add(label);
 
 	JPanel panel_2 = new JPanel() {
 	    @Override
@@ -213,6 +216,7 @@ public class MainFrame extends JFrame implements Runnable {
 		return false;
 	    }
 	};
+	panel_2.setBounds(panel_bounds);
 	panel_2.setBorder(new BevelBorder(BevelBorder.RAISED, null, null, null, null));
 	label.addMouseListener(new MouseAdapter() {
 	    @Override
@@ -234,6 +238,8 @@ public class MainFrame extends JFrame implements Runnable {
 
 	    @Override
 	    public void mouseExited(MouseEvent e) {
+		// FIXME: lowers the quality of icon, create global image twice, instead of
+		// creating each time.
 		panel_2.setBorder(new BevelBorder(BevelBorder.RAISED, null, null, null, null));
 		Image smileFaceIcon = JImages.scaleImage(convertIconToImage(label.getIcon()), label.getWidth(),
 			label.getHeight());
@@ -241,14 +247,16 @@ public class MainFrame extends JFrame implements Runnable {
 	    }
 	});
 
-	panel_2.setBounds(lblMs.getX() + lblMs.getWidth() + margin * 2 - 2, margin - 5, 31, 25 + 5);
-	panel.add(panel_2);
+	BOTTOM_PANEL.add(panel_2);
+	/********************
+	 * PLAY BUTTON
+	 ********************/
 	getContentPane().setLayout(groupLayout);
 
 	slider.addChangeListener(new ChangeListener() {
 	    public void stateChanged(ChangeEvent arg0) {
 		lblMs.setText(slider.getValue() + " ms");
-		LATENCY = slider.getValue();
+		LATENCY = slider.getValue() + 5;
 	    }
 	});
 
