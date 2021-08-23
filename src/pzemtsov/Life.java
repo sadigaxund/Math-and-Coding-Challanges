@@ -1,19 +1,24 @@
 package pzemtsov;
 
+import java.awt.Point;
 import java.util.HashSet;
 import java.util.Set;
 
 import util.HashPoint;
 
 public class Life {
-    public static void put(Worker w, String[] p) {
+    public static void put(Worker w, String[] p, Point offset) {
 	for (int y = 0; y < p.length; y++) {
 	    for (int x = 0; x < p[y].length(); x++) {
 		if (p[y].charAt(x) == '#') {
-		    w.put(x, y);
+		    w.put(x- offset.x, y - offset.y);
 		}
 	    }
 	}
+    }
+
+    public static void put(Worker w, String[] p) {
+	put(w, p, new Point(0, 0));
     }
 
     private static final String[] ACORN = new String[] { "##  ###", ":::#:::", ":#" };
@@ -103,17 +108,11 @@ public class Life {
 	Set<HashPoint> pts = map.get();
 	HashSet<HashPoint> hash_pts = new HashSet<>(pts);
 	System.out.println(hash_pts.toString());
-	
+
 	map.step();
 	hash_pts = new HashSet<>(map.get());
 	System.out.println(hash_pts.toString());
-	
-	map.step();
-	hash_pts = new HashSet<>(map.get());
-	System.out.println(hash_pts.toString());
-	map.step();
-	hash_pts = new HashSet<>(map.get());
-	System.out.println(hash_pts.toString());
+
 	map.step();
 	hash_pts = new HashSet<>(map.get());
 	System.out.println(hash_pts.toString());
@@ -126,6 +125,12 @@ public class Life {
 	map.step();
 	hash_pts = new HashSet<>(map.get());
 	System.out.println(hash_pts.toString());
-	
+	map.step();
+	hash_pts = new HashSet<>(map.get());
+	System.out.println(hash_pts.toString());
+	map.step();
+	hash_pts = new HashSet<>(map.get());
+	System.out.println(hash_pts.toString());
+
     }
 }

@@ -29,6 +29,8 @@ package Graphics;
 import java.awt.AWTException;
 import java.awt.EventQueue;
 import java.awt.Robot;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
@@ -81,13 +83,9 @@ public class MainFrame extends JFrame implements Runnable {
     /**
      * The delay for the game mechanism
      */
-    public static final int LATENCY = 100;
+    public static final int LATENCY = 1000;
 
     private Surface surf;
-
-    private static final String[] ACORN = new String[] { "##  ###", ":::#:::", ":#" };
-    // private HashSet<Point> hashedPoints;
-    private Hash map;
 
     public MainFrame() {
 	try {
@@ -98,24 +96,13 @@ public class MainFrame extends JFrame implements Runnable {
     }
 
     private void initUI() {
-	surf = new Surface();
+	surf = new Surface(WINDOW_WIDTH, WINDOW_HEIGHT);
 	add(surf);
 	setTitle("Game of Life");
 	setSize(WINDOW_WIDTH, WINDOW_HEIGHT);
 	setLocationRelativeTo(null);
 	setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-	map = new Hash(new Hasher());
-	map.reset();
-	Life.put(map, ACORN);
-	surf.setHashedPoints(new HashSet<>(map.get())); // TODO: if this part repeats change it to method
-
-    }
-
-    private void step() {
-	map.step();
-	surf.setHashedPoints(new HashSet<>(map.get()));
-	surf.repaint();
     }
 
     private void initMouseAction() throws AWTException {
@@ -147,6 +134,33 @@ public class MainFrame extends JFrame implements Runnable {
 
 	    }
 	});
+	surf.addComponentListener(new ComponentListener() {
+	    
+	    @Override
+	    public void componentShown(ComponentEvent e) {
+		// TODO Auto-generated method stub
+		
+	    }
+	    
+	    @Override
+	    public void componentResized(ComponentEvent e) {
+		surf.repaint();
+		
+	    }
+	    
+	    @Override
+	    public void componentMoved(ComponentEvent e) {
+		// TODO Auto-generated method stub
+		
+	    }
+	    
+	    @Override
+	    public void componentHidden(ComponentEvent e) {
+		// TODO Auto-generated method stub
+		
+	    }
+	});
+
     }
 
     public static void main(String[] args) {
@@ -165,11 +179,11 @@ public class MainFrame extends JFrame implements Runnable {
     public void run() {
 	while (true) {
 	    try {
-		Thread.sleep(1000);
+		Thread.sleep(LATENCY);
 	    } catch (InterruptedException e) {
 	    }
 
-	    step();
+	    surf.step();
 	}
     }
 

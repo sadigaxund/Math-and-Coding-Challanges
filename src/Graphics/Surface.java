@@ -6,7 +6,6 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.HashSet;
-import java.util.Set;
 
 import javax.swing.JPanel;
 
@@ -50,14 +49,31 @@ public class Surface extends JPanel {
 
     private int grid_size = 16;
     private Color darkestBlue = new Color(21, 34, 56);
-    private HashSet<HashPoint> hashedPoints;
-    private Point offset = new Point(0, 0);
-    private int map_width = 500;
-    private int map_height = 500;
 
-    public Surface() {
+    private int gridmap_width = 500;
+    private int gridmap_height = 500;
+
+    private int window_width;
+    private int window_height;
+
+    private Point index_offset;
+    private Point pixel_offset;
+
+    private static final String[] ACORN = new String[] { "##  ###", ":::#:::", ":#" };
+    private HashSet<HashPoint> hashedPoints;
+    private Hash map;
+
+    public Surface(int window_width, int window_heigth) {
 	super();
-	hashedPoints = new HashSet<>();
+	this.window_height = window_heigth;
+	this.window_width = window_width;
+	index_offset = new Point(-gridmap_width / 2 + 1, -gridmap_height / 2 + 1);
+	pixel_offset = new Point(index_offset.x * grid_size + window_width / 2 - 64,
+		index_offset.y * grid_size + window_heigth / 2 - 64);
+	map = new Hash(new Hasher());
+	map.reset();
+	Life.put(map, ACORN, index_offset);
+	hashedPoints = new HashSet<>(map.get());
     }
 
     private void doDrawing(Graphics g) {
@@ -70,14 +86,27 @@ public class Surface extends JPanel {
 	g2d.fillRect(0, 0, w, h);
 
 	g2d.setColor(new Color(145, 163, 176));
-	for (int i = 0; i < map_width; i++)
-	    for (int j = 0; j < map_height; j++) {
-		g2d.draw(createRectangle(new Point(i, j), offset, grid_size));
+	int sum = 0;
+	for (int i = 0; i < gridmap_width; i++)
+	    for (int j = 0; j < gridmap_height; j++) {
+		// RENDER OPTIMIZATION
+		Rectangle rect = createRectangle(new Point(i, j), pixel_offset, grid_size);
+		int check_margin = 10;
+		boolean check_left_x = (rect.x + rect.width < -check_margin);
+		boolean check_right_x = (rect.x > getWidth() + check_margin);
+		boolean check_up_y = (rect.y + rect.height < -check_margin);
+		boolean check_down_y = (rect.y > getHeight() + check_margin);
+
+		if (check_down_y || check_left_x || check_right_x || check_up_y) 
+		    continue;
+		
+		
+		g2d.draw(rect);
 	    }
 
 	g2d.setColor(new Color(255, 255, 255));
 	for (HashPoint pt : hashedPoints) {
-	    g2d.fill(createRectangle(new Point(pt.x, pt.y), offset, grid_size));
+	    g2d.fill(createRectangle(new Point(pt.x, pt.y), pixel_offset, grid_size));
 	}
     }
 
@@ -93,6 +122,7 @@ public class Surface extends JPanel {
 	super.paintComponent(g);
 	doDrawing(g);
     }
+    
 
     /**
      * @return the hashedPoints
@@ -113,20 +143,26 @@ public class Surface extends JPanel {
      * @return the offset
      */
     public Point getOffset() {
-	return offset;
+	return pixel_offset;
     }
 
     /**
-     * @param offset
-     *                   the offset to set
+     * @param pixel_offset
+     *                         the offset to set
      */
     public void setOffset(int x, int y) {
-	offset.x = x;
-	offset.y = y;
+	pixel_offset.x = x;
+	pixel_offset.y = y;
     }
 
     public void addOffset(int x, int y) {
-	setOffset(offset.x + x, offset.y + y);
+	setOffset(pixel_offset.x + x, pixel_offset.y + y);
     }
 
+    public void step() {
+	map.step();
+	hashedPoints = new HashSet<>(map.get());
+	repaint();
+    }
+    
 }
