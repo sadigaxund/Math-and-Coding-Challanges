@@ -28,6 +28,7 @@ package Graphics;
 
 import java.awt.AWTException;
 import java.awt.EventQueue;
+import java.awt.FlowLayout;
 import java.awt.Robot;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
@@ -37,7 +38,16 @@ import java.awt.event.MouseMotionAdapter;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.swing.GroupLayout;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JSlider;
+import javax.swing.UIManager;
+import javax.swing.GroupLayout.Alignment;
+import javax.swing.LayoutStyle.ComponentPlacement;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 import Utils.JHardware;
 import pzemtsov.Hash;
@@ -83,7 +93,9 @@ public class MainFrame extends JFrame implements Runnable {
     /**
      * The delay for the game mechanism
      */
-    public static final int LATENCY = 1000;
+    public static int LATENCY = 1000;
+
+    public static final int BOTTOM_PANEL_HEIGHT = 40;
 
     private Surface surf;
 
@@ -96,12 +108,64 @@ public class MainFrame extends JFrame implements Runnable {
     }
 
     private void initUI() {
-	surf = new Surface(WINDOW_WIDTH, WINDOW_HEIGHT);
-	add(surf);
 	setTitle("Game of Life");
 	setSize(WINDOW_WIDTH, WINDOW_HEIGHT);
 	setLocationRelativeTo(null);
 	setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+	JPanel panel = new JPanel();
+
+	FlowLayout flowLayout = (FlowLayout) panel.getLayout();
+	flowLayout.setVgap(0);
+	flowLayout.setHgap(0);
+
+	panel.setBorder(UIManager.getBorder("RadioButton.border"));
+
+	surf = new Surface(WINDOW_WIDTH, WINDOW_HEIGHT);
+	FlowLayout flowLayout_1 = (FlowLayout) surf.getLayout();
+	flowLayout_1.setHgap(0);
+	flowLayout_1.setVgap(0);
+	GroupLayout groupLayout = new GroupLayout(getContentPane());
+	groupLayout.setHorizontalGroup(groupLayout.createParallelGroup(Alignment.LEADING)
+		.addComponent(panel, GroupLayout.DEFAULT_SIZE, WINDOW_WIDTH, Short.MAX_VALUE)
+		.addComponent(surf, GroupLayout.DEFAULT_SIZE, WINDOW_WIDTH, Short.MAX_VALUE));
+	groupLayout.setVerticalGroup(groupLayout.createParallelGroup(Alignment.TRAILING)
+		.addGroup(groupLayout.createSequentialGroup()
+			.addComponent(surf, GroupLayout.DEFAULT_SIZE, WINDOW_HEIGHT, Short.MAX_VALUE).addComponent(
+				panel, GroupLayout.PREFERRED_SIZE, BOTTOM_PANEL_HEIGHT, GroupLayout.PREFERRED_SIZE)));
+	getContentPane().setLayout(groupLayout);
+	panel.setLayout(null);
+	int margin = 10;
+	int component_height = BOTTOM_PANEL_HEIGHT - margin * 2;
+	JLabel lblLatency = new JLabel("Latency:");
+	lblLatency.setBounds(margin, margin, 50, component_height - 2);
+	panel.add(lblLatency);
+
+	JSlider slider = new JSlider();
+	slider.setBounds(lblLatency.getX() + lblLatency.getWidth() + margin, margin - 1, 150, component_height + 2);
+	slider.setValue(1000);
+	slider.setSnapToTicks(true);
+	slider.repaint();
+	slider.setMinorTickSpacing(100);
+	slider.setMinimum(5);
+	slider.setMaximum(2500);
+	panel.add(slider);
+
+	JLabel lblMs = new JLabel("0000 ms");
+	lblMs.setBounds(slider.getX() + slider.getWidth() + margin, margin, 50, component_height - 2);
+	panel.add(lblMs);
+
+	JLabel label = new JLabel("");
+	label.setBounds(358, 15, 0, 0);
+	panel.add(label);
+	getContentPane().setLayout(groupLayout);
+
+	slider.addChangeListener(new ChangeListener() {
+	    public void stateChanged(ChangeEvent arg0) {
+		lblMs.setText(slider.getValue() + " ms");
+		LATENCY = slider.getValue();
+	    }
+	});
 
     }
 
@@ -135,29 +199,29 @@ public class MainFrame extends JFrame implements Runnable {
 	    }
 	});
 	surf.addComponentListener(new ComponentListener() {
-	    
+
 	    @Override
 	    public void componentShown(ComponentEvent e) {
 		// TODO Auto-generated method stub
-		
+
 	    }
-	    
+
 	    @Override
 	    public void componentResized(ComponentEvent e) {
 		surf.repaint();
-		
+
 	    }
-	    
+
 	    @Override
 	    public void componentMoved(ComponentEvent e) {
 		// TODO Auto-generated method stub
-		
+
 	    }
-	    
+
 	    @Override
 	    public void componentHidden(ComponentEvent e) {
 		// TODO Auto-generated method stub
-		
+
 	    }
 	});
 
