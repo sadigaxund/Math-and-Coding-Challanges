@@ -8,6 +8,7 @@ import java.awt.Rectangle;
 import java.util.HashSet;
 
 import javax.swing.JPanel;
+import javax.swing.SpringLayout;
 
 import pzemtsov.Hash;
 import pzemtsov.Hasher;
@@ -59,11 +60,16 @@ public class Surface extends JPanel {
 
     private Point pixel_offset;
 
-    private static final String[] ACORN = new String[] { "##  ###", ":::#:::", ":#" };
-    private static final String[] GUN = new String[] { "                        #             ",
-	    "                      # #             ", "            ##      ##            ##",
-	    "           #   #    ##            ##", "##        #     #   ##", "##        #   # ##    # #",
-	    "          #     #       #", "           #   #", "            ##" };
+    private static final String[] ACORN = new String[] { "OO  OOO", ":::O:::", ":O" };
+    private static final String[] GUN = new String[] { "                        O             ",
+	    "                      O O             ", "            OO      OO            OO",
+	    "           O   O    OO            OO", "OO        O     O   OO", "OO        O   O OO    O O",
+	    "          O     O       O", "           O   O", "            OO" };
+
+    private static final String[] DEMONOID = new String[] { "....OO......OO....", "...O.O......O.O...",
+	    "...O..........O...", "OO.O..........O.OO", "OO.O.O..OO..O.O.OO", "...O.O.O..O.O.O...",
+	    "...O.O.O..O.O.O...", "OO.O.O..OO..O.O.OO", "OO.O..........O.OO", "...O..........O...",
+	    "...O.O......O.O...", "....OO......OO...." };
 
     private HashSet<HashPoint> hashedPoints;
     private Hash map;
@@ -74,12 +80,12 @@ public class Surface extends JPanel {
 	this.window_width = window_width;
 	Point index_offset = new Point(-gridmap_width / 2 + 1, -gridmap_height / 2 + 1);
 
-	pixel_offset = new Point(index_offset.x * grid_size + window_width / 2 - 64,
-		index_offset.y * grid_size + window_heigth / 2 - 64);
+	pixel_offset = new Point(index_offset.x * grid_size + window_width / 2 - 10 * grid_size,
+		index_offset.y * grid_size + window_heigth / 2 - 8 * grid_size);
 
 	map = new Hash(new Hasher());
 	map.reset();
-	put(map, GUN, index_offset);
+	put(map, ACORN, index_offset);
 	hashedPoints = new HashSet<>(map.get());
     }
 
@@ -95,8 +101,9 @@ public class Surface extends JPanel {
 	g2d.setColor(new Color(0, 80, 110));
 	int x_off = pixel_offset.x % grid_size;
 	int y_off = pixel_offset.y % grid_size;
-	for (int i = 0; i < window_width / grid_size + 1; i++)
-	    for (int j = 0; j < window_height / grid_size; j++) {
+	// +- 1 is for creating larger gridmap than the visible window frame
+	for (int i = -1; i < window_width / grid_size + 1; i++)
+	    for (int j = -1; j < window_height / grid_size + 1; j++) {
 		Rectangle rect = createRectangle(new Point(i, j), new Point(x_off, y_off), grid_size);
 		g2d.draw(rect);
 	    }
@@ -138,7 +145,7 @@ public class Surface extends JPanel {
     public static void put(Worker w, String[] p, Point offset) {
 	for (int y = 0; y < p.length; y++) {
 	    for (int x = 0; x < p[y].length(); x++) {
-		if (p[y].charAt(x) == '#') {
+		if (p[y].charAt(x) == 'O') {
 		    w.put(x - offset.x, y - offset.y);
 		}
 	    }
@@ -213,3 +220,45 @@ public class Surface extends JPanel {
     }
 
 }
+/**
+ * SpringLayout sl_BOTTOM_PANEL = new SpringLayout();
+ * sl_BOTTOM_PANEL.putConstraint(SpringLayout.WEST, label, 350,
+ * SpringLayout.WEST, BOTTOM_PANEL);
+ * sl_BOTTOM_PANEL.putConstraint(SpringLayout.SOUTH, label, 0,
+ * SpringLayout.SOUTH, BOTTOM_PANEL);
+ * sl_BOTTOM_PANEL.putConstraint(SpringLayout.EAST, label, -341,
+ * SpringLayout.EAST, BOTTOM_PANEL);
+ * sl_BOTTOM_PANEL.putConstraint(SpringLayout.NORTH, panel_2, 0,
+ * SpringLayout.NORTH, lblLatency);
+ * sl_BOTTOM_PANEL.putConstraint(SpringLayout.WEST, panel_2, 568,
+ * SpringLayout.EAST, lblMs); sl_BOTTOM_PANEL.putConstraint(SpringLayout.SOUTH,
+ * panel_2, 0, SpringLayout.SOUTH, lblLatency);
+ * sl_BOTTOM_PANEL.putConstraint(SpringLayout.EAST, panel_2, -10,
+ * SpringLayout.EAST, BOTTOM_PANEL);
+ * sl_BOTTOM_PANEL.putConstraint(SpringLayout.WEST, lblLatency, 10,
+ * SpringLayout.WEST, BOTTOM_PANEL);
+ * sl_BOTTOM_PANEL.putConstraint(SpringLayout.EAST, lblLatency, -6,
+ * SpringLayout.WEST, slider); sl_BOTTOM_PANEL.putConstraint(SpringLayout.NORTH,
+ * lblMs, 0, SpringLayout.NORTH, lblLatency);
+ * sl_BOTTOM_PANEL.putConstraint(SpringLayout.WEST, lblMs, 6, SpringLayout.EAST,
+ * slider); sl_BOTTOM_PANEL.putConstraint(SpringLayout.SOUTH, lblMs, 0,
+ * SpringLayout.SOUTH, lblLatency);
+ * sl_BOTTOM_PANEL.putConstraint(SpringLayout.EAST, lblMs, 245,
+ * SpringLayout.EAST, lblLatency);
+ * sl_BOTTOM_PANEL.putConstraint(SpringLayout.WEST, slider, 79,
+ * SpringLayout.WEST, BOTTOM_PANEL);
+ * sl_BOTTOM_PANEL.putConstraint(SpringLayout.NORTH, slider, 2,
+ * SpringLayout.NORTH, BOTTOM_PANEL);
+ * sl_BOTTOM_PANEL.putConstraint(SpringLayout.SOUTH, slider, -2,
+ * SpringLayout.SOUTH, BOTTOM_PANEL);
+ * sl_BOTTOM_PANEL.putConstraint(SpringLayout.EAST, slider, -677,
+ * SpringLayout.EAST, BOTTOM_PANEL);
+ * sl_BOTTOM_PANEL.putConstraint(SpringLayout.NORTH, lblLatency, 2,
+ * SpringLayout.NORTH, BOTTOM_PANEL);
+ * sl_BOTTOM_PANEL.putConstraint(SpringLayout.SOUTH, lblLatency, -2,
+ * SpringLayout.SOUTH, BOTTOM_PANEL);
+ * sl_BOTTOM_PANEL.putConstraint(SpringLayout.NORTH, label, 2,
+ * SpringLayout.NORTH, BOTTOM_PANEL); BOTTOM_PANEL.setLayout(sl_BOTTOM_PANEL);
+ * BOTTOM_PANEL.add(lblLatency); BOTTOM_PANEL.add(slider);
+ * BOTTOM_PANEL.add(lblMs); BOTTOM_PANEL.add(label); BOTTOM_PANEL.add(panel_2);
+ */
