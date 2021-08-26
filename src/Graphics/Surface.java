@@ -52,12 +52,8 @@ public class Surface extends JPanel {
     private int grid_size = 16;
     private Color darkestBlue = new Color(21, 34, 56);
 
-    private int gridmap_width = 500;
-    private int gridmap_height = 500;
-
-    private int window_width;
-    private int window_height;
-
+    private Point gridMapSize;
+    private Point windowSize;
     private Point pixel_offset;
 
     private static final String[] ACORN = new String[] { "OO  OOO", ":::O:::", ":O" };
@@ -74,19 +70,15 @@ public class Surface extends JPanel {
     private HashSet<HashPoint> hashedPoints;
     private Hash map;
 
+    // public static void main(String[] str) {
+    // System.out.println(getPatternLength(DEMONOID));
+    // }
+
     public Surface(int window_width, int window_heigth) {
 	super();
-	this.window_height = window_heigth;
-	this.window_width = window_width;
-	Point index_offset = new Point(-gridmap_width / 2 + 1, -gridmap_height / 2 + 1);
+	windowSize = new Point(window_width, window_heigth);
+	setPattern(GUN);
 
-	pixel_offset = new Point(index_offset.x * grid_size + window_width / 2 - 10 * grid_size,
-		index_offset.y * grid_size + window_heigth / 2 - 8 * grid_size);
-
-	map = new Hash(new Hasher());
-	map.reset();
-	put(map, ACORN, index_offset);
-	hashedPoints = new HashSet<>(map.get());
     }
 
     private void doDrawing(Graphics g) {
@@ -102,8 +94,8 @@ public class Surface extends JPanel {
 	int x_off = pixel_offset.x % grid_size;
 	int y_off = pixel_offset.y % grid_size;
 	// +- 1 is for creating larger gridmap than the visible window frame
-	for (int i = -1; i < window_width / grid_size + 1; i++)
-	    for (int j = -1; j < window_height / grid_size + 1; j++) {
+	for (int i = -1; i < windowSize.x / grid_size + 1; i++)
+	    for (int j = -1; j < windowSize.y / grid_size + 1; j++) {
 		Rectangle rect = createRectangle(new Point(i, j), new Point(x_off, y_off), grid_size);
 		g2d.draw(rect);
 	    }
@@ -127,15 +119,6 @@ public class Surface extends JPanel {
 
     private Rectangle createRectangle(Point loc, Point offset, int size) {
 	return new Rectangle(offset.x + loc.x * size, offset.y + loc.y * size, size, size);
-
-	// return new Rectangle(loc.x * size, loc.y * size, size, size);
-
-    }
-
-    @Override
-    public void paintComponent(Graphics g) {
-	super.paintComponent(g);
-	doDrawing(g);
     }
 
     public static void put(Worker w, String[] p) {
@@ -152,6 +135,43 @@ public class Surface extends JPanel {
 	}
     }
 
+    private static Point getPatternLength(String[] strs) {
+	Point retval = new Point(0, strs.length);
+
+	for (String str : strs) {
+	    int ind = 0;
+	    char[] inCh = str.toCharArray();
+	    for (int i = 0; i < inCh.length; i++) {
+		if (inCh[i] == 'O')
+		    ind = i;
+	    }
+	    if (ind > retval.x)
+		retval.x = ind;
+	}
+	retval.setLocation(retval.x + 1, retval.y + 1); // return length instead of index
+	return retval;
+    }
+
+    private void setPattern(String[] pattern) {
+	Point patternSize = getPatternLength(pattern);
+	int w = windowSize.x / grid_size + 2;
+	int h = windowSize.y / grid_size + 2;
+	pixel_offset = new Point(-(w - patternSize.x) / 2, -(h - patternSize.y) / 2);
+	map = new Hash(new Hasher());
+	map.reset();
+	put(map, pattern, pixel_offset);
+	hashedPoints = new HashSet<>(map.get());
+    }
+
+    @Override
+    public void paintComponent(Graphics g) {
+	super.paintComponent(g);
+	doDrawing(g);
+    }
+
+    /**********************************************************
+     * GETTERS & SETTERS
+     ***********************************************************/
     /**
      * @return the hashedPoints
      */

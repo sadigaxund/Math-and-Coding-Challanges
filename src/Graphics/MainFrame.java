@@ -55,10 +55,11 @@ import javax.swing.event.ChangeListener;
 
 import Utils.JHardware;
 import util.HashPoint;
+
 /**
- * TODO: FUNCTIONALITY TO DRAW
- * TODO: FUNCTIONALITY TO IMPORT or TYPE
- * TODO: SOME GUI FEATURES
+ * TODO: FUNCTIONALITY TO DRAW TODO: FUNCTIONALITY TO IMPORT or TYPE TODO: SOME
+ * GUI FEATURES
+ * 
  * @author sadig
  *
  */
@@ -201,25 +202,6 @@ public class MainFrame extends JFrame implements Runnable {
 	getContentPane().add(BOTTOM_PANEL);
 	getContentPane().add(surf);
 
-	surf.addMouseWheelListener(new MouseWheelListener() {
-	    public void mouseWheelMoved(MouseWheelEvent e) {
-
-		int notches = e.getWheelRotation();
-		if (notches < 0) {// UP
-		    surf.setGridSize(surf.getGridSize() + 1);
-		} else {
-		    surf.setGridSize(surf.getGridSize() - 1);
-		}
-		surf.repaint();
-	    }
-	});
-	slider.addChangeListener(new ChangeListener() {
-	    public void stateChanged(ChangeEvent arg0) {
-		lblMs.setText(slider.getValue() + " ms");
-		LATENCY = slider.getValue() + 5;
-	    }
-	});
-
     }
 
     private void initMouseAction() throws AWTException {
@@ -255,6 +237,24 @@ public class MainFrame extends JFrame implements Runnable {
 	    @Override
 	    public void componentResized(ComponentEvent e) {
 		surf.repaint();
+	    }
+	});
+	surf.addMouseWheelListener(new MouseWheelListener() {
+	    public void mouseWheelMoved(MouseWheelEvent e) {
+
+		int notches = e.getWheelRotation();
+		if (notches < 0) {// UP
+		    surf.setGridSize(surf.getGridSize() + 1);
+		} else {
+		    surf.setGridSize(surf.getGridSize() - 1);
+		}
+		surf.repaint();
+	    }
+	});
+	slider.addChangeListener(new ChangeListener() {
+	    public void stateChanged(ChangeEvent arg0) {
+		lblMs.setText(slider.getValue() + " ms");
+		LATENCY = slider.getValue() + 5;
 	    }
 	});
 
