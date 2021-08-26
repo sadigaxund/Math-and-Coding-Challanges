@@ -36,11 +36,15 @@ import java.awt.Robot;
 import java.awt.SystemColor;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
+import java.util.HashSet;
+
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -111,8 +115,9 @@ public class MainFrame extends JFrame implements Runnable {
     private JSlider slider;
     private JPanel BOTTOM_PANEL;
     private JLabel lblMs;
-    private MyButton buttonPause;
-    private MyButton buttonDraw;
+    private BiStateButton buttonPause;
+    private BiStateButton drawButton;
+    private MultiStateButton drawModeButton;
 
     public MainFrame() {
 	try {
@@ -163,8 +168,12 @@ public class MainFrame extends JFrame implements Runnable {
 	lblMs = new JLabel("1000 ms");
 	lblMs.setHorizontalAlignment(SwingConstants.LEADING);
 	lblMs.setFont(new Font("Arial", Font.BOLD, 12));
-	buttonPause = new MyButton("play", "pause", pauseSize);
-	buttonDraw = new MyButton("pencil", "xpencil", pauseSize + 8);
+	buttonPause = new BiStateButton("play", "pause", pauseSize);
+	buttonPause.setState(true);
+	drawButton = new BiStateButton("select", "pencil", pauseSize + 8);
+	drawModeButton = new MultiStateButton(pauseSize, "white", "darkestBlue", "inverted");
+	
+
 	SpringLayout sl_BOTTOM_PANEL = new SpringLayout();
 
 	sl_BOTTOM_PANEL.putConstraint(SpringLayout.EAST, lblLatency, latencyLblW, SpringLayout.WEST, BOTTOM_PANEL);
@@ -184,20 +193,21 @@ public class MainFrame extends JFrame implements Runnable {
 
 	sl_BOTTOM_PANEL.putConstraint(SpringLayout.NORTH, buttonPause, 0, SpringLayout.NORTH, BOTTOM_PANEL);
 	sl_BOTTOM_PANEL.putConstraint(SpringLayout.SOUTH, buttonPause, 0, SpringLayout.SOUTH, slider);
-
-	sl_BOTTOM_PANEL.putConstraint(SpringLayout.NORTH, buttonDraw, 0, SpringLayout.NORTH, BOTTOM_PANEL);
-	sl_BOTTOM_PANEL.putConstraint(SpringLayout.SOUTH, buttonDraw, 0, SpringLayout.SOUTH, slider);
 	sl_BOTTOM_PANEL.putConstraint(SpringLayout.WEST, buttonPause, 6, SpringLayout.EAST, lblMs);
 	sl_BOTTOM_PANEL.putConstraint(SpringLayout.EAST, buttonPause, -556, SpringLayout.EAST, BOTTOM_PANEL);
-	sl_BOTTOM_PANEL.putConstraint(SpringLayout.WEST, buttonDraw, 6, SpringLayout.EAST, buttonPause);
-	sl_BOTTOM_PANEL.putConstraint(SpringLayout.EAST, buttonDraw, -511, SpringLayout.EAST, BOTTOM_PANEL);
+
+	sl_BOTTOM_PANEL.putConstraint(SpringLayout.NORTH, drawButton, 0, SpringLayout.NORTH, BOTTOM_PANEL);
+	sl_BOTTOM_PANEL.putConstraint(SpringLayout.SOUTH, drawButton, 0, SpringLayout.SOUTH, slider);
+	sl_BOTTOM_PANEL.putConstraint(SpringLayout.WEST, drawButton, 6, SpringLayout.EAST, buttonPause);
+	sl_BOTTOM_PANEL.putConstraint(SpringLayout.EAST, drawButton, -511, SpringLayout.EAST, BOTTOM_PANEL);
 
 	BOTTOM_PANEL.setLayout(sl_BOTTOM_PANEL);
 	BOTTOM_PANEL.add(lblLatency);
 	BOTTOM_PANEL.add(slider);
 	BOTTOM_PANEL.add(lblMs);
 	BOTTOM_PANEL.add(buttonPause);
-	BOTTOM_PANEL.add(buttonDraw);
+	BOTTOM_PANEL.add(drawButton);
+	BOTTOM_PANEL.add(drawModeButton);
 
 	getContentPane().add(BOTTOM_PANEL);
 	getContentPane().add(surf);
@@ -211,7 +221,7 @@ public class MainFrame extends JFrame implements Runnable {
 	Robot r = new Robot();
 	r.mouseMove(initX, initY);
 	boolean hold = true;
-
+	HashSet<HashPoint> recentlyDrawnPoints = new HashSet<>();
 	surf.addMouseMotionListener(new MouseMotionAdapter() {
 
 	    HashPoint prevCoords = new HashPoint(initX, initY);
@@ -223,6 +233,12 @@ public class MainFrame extends JFrame implements Runnable {
 
 	    @Override
 	    public void mouseDragged(MouseEvent e) {
+		if (drawButton.getState()) {
+		    buttonPause.setState(true);
+		    surf.clickCell(e.getX(), e.getY(), recentlyDrawnPoints);
+		    return;
+		}
+
 		HashPoint currCoords = new HashPoint(e.getX(), e.getY());
 
 		if (hold) {
@@ -249,6 +265,13 @@ public class MainFrame extends JFrame implements Runnable {
 		    surf.setGridSize(surf.getGridSize() - 1);
 		}
 		surf.repaint();
+	    }
+	});
+	surf.addMouseListener(new MouseAdapter() {
+	    @Override
+	    public void mouseClicked(MouseEvent e) {
+		if (drawButton.getState())
+		    surf.clickCell(e.getX(), e.getY());
 	    }
 	});
 	slider.addChangeListener(new ChangeListener() {

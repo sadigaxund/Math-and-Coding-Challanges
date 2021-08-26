@@ -158,9 +158,17 @@ public class test extends JFrame implements Runnable {
 	JLabel lblMs = new JLabel("1000 ms");
 	lblMs.setHorizontalAlignment(SwingConstants.LEADING);
 	lblMs.setFont(new Font("Arial", Font.BOLD, 12));
-	MyButton buttonPause = new MyButton("play", "pause", pauseSize);
-	MyButton buttonDraw = new MyButton("pencil", "xpencil", pauseSize + 8);
+	BiStateButton buttonPause = new BiStateButton("play", "pause", pauseSize);
+	BiStateButton buttonDraw = new BiStateButton("pencil", "select", pauseSize + 8);
+
+	MultiStateButton drawModeButton = new MultiStateButton(pauseSize, "white", "darkestBlue", "inverted");
+
 	SpringLayout sl_BOTTOM_PANEL = new SpringLayout();
+	sl_BOTTOM_PANEL.putConstraint(SpringLayout.NORTH, drawModeButton, 0, SpringLayout.NORTH, buttonPause);
+	sl_BOTTOM_PANEL.putConstraint(SpringLayout.WEST, drawModeButton, 6, SpringLayout.EAST, buttonDraw);
+	sl_BOTTOM_PANEL.putConstraint(SpringLayout.SOUTH, drawModeButton, 0, SpringLayout.SOUTH, slider);
+	sl_BOTTOM_PANEL.putConstraint(SpringLayout.EAST, drawModeButton, -463, SpringLayout.EAST, BOTTOM_PANEL);
+	sl_BOTTOM_PANEL.putConstraint(SpringLayout.EAST, buttonDraw, -509, SpringLayout.EAST, BOTTOM_PANEL);
 
 	sl_BOTTOM_PANEL.putConstraint(SpringLayout.EAST, lblLatency, latencyLblW, SpringLayout.WEST, BOTTOM_PANEL);
 	sl_BOTTOM_PANEL.putConstraint(SpringLayout.WEST, lblLatency, MARGIN * 2, SpringLayout.WEST, BOTTOM_PANEL);
@@ -185,7 +193,6 @@ public class test extends JFrame implements Runnable {
 	sl_BOTTOM_PANEL.putConstraint(SpringLayout.WEST, buttonPause, 6, SpringLayout.EAST, lblMs);
 	sl_BOTTOM_PANEL.putConstraint(SpringLayout.EAST, buttonPause, -556, SpringLayout.EAST, BOTTOM_PANEL);
 	sl_BOTTOM_PANEL.putConstraint(SpringLayout.WEST, buttonDraw, 6, SpringLayout.EAST, buttonPause);
-	sl_BOTTOM_PANEL.putConstraint(SpringLayout.EAST, buttonDraw, -511, SpringLayout.EAST, BOTTOM_PANEL);
 
 	BOTTOM_PANEL.setLayout(sl_BOTTOM_PANEL);
 	BOTTOM_PANEL.add(lblLatency);
@@ -193,6 +200,7 @@ public class test extends JFrame implements Runnable {
 	BOTTOM_PANEL.add(lblMs);
 	BOTTOM_PANEL.add(buttonPause);
 	BOTTOM_PANEL.add(buttonDraw);
+	BOTTOM_PANEL.add(drawModeButton);
 
 	getContentPane().add(BOTTOM_PANEL);
 	getContentPane().add(surf);

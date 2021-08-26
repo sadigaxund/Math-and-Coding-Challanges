@@ -5,6 +5,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.util.ArrayList;
 import java.util.HashSet;
 
 import javax.swing.JPanel;
@@ -52,7 +53,6 @@ public class Surface extends JPanel {
     private int grid_size = 16;
     private Color darkestBlue = new Color(21, 34, 56);
 
-    private Point gridMapSize;
     private Point windowSize;
     private Point pixel_offset;
 
@@ -85,6 +85,7 @@ public class Surface extends JPanel {
 	Graphics2D g2d = (Graphics2D) g;
 	int w = getWidth();
 	int h = getHeight();
+
 	// Draw Background
 	g2d.setColor(darkestBlue);
 	g2d.fillRect(0, 0, w, h);
@@ -93,6 +94,7 @@ public class Surface extends JPanel {
 	g2d.setColor(new Color(0, 80, 110));
 	int x_off = pixel_offset.x % grid_size;
 	int y_off = pixel_offset.y % grid_size;
+
 	// +- 1 is for creating larger gridmap than the visible window frame
 	for (int i = -1; i < windowSize.x / grid_size + 1; i++)
 	    for (int j = -1; j < windowSize.y / grid_size + 1; j++) {
@@ -105,13 +107,15 @@ public class Surface extends JPanel {
 	for (HashPoint pt : hashedPoints) {
 	    // RENDER OPTIMIZATION
 	    Rectangle rect = createRectangle(new Point(pt.x, pt.y), pixel_offset, grid_size);
-	    int check_margin = 10;
-	    boolean check_left_x = (rect.x + rect.width < -check_margin);
-	    boolean check_right_x = (rect.x > getWidth() + check_margin);
-	    boolean check_up_y = (rect.y + rect.height < -check_margin);
-	    boolean check_down_y = (rect.y > getHeight() + check_margin);
-
-	    if (check_down_y || check_left_x || check_right_x || check_up_y)
+	    /*
+	     * Note: by adding some variable instead of 0, you can adjust the margin from
+	     * where the cells should be rendered. Forex.: if negative value a cell will be
+	     * deleted before it can disappear
+	     */
+	    if ((rect.x + rect.width < -0) || // left - horizontal check <br>
+		    (rect.x > getWidth() + 0) || // right - horizontal check <br>
+		    (rect.y + rect.height < -0) || // up - vertical check <br>
+		    (rect.y > getHeight() + 0)) // down - vertical check <br>
 		continue;
 	    g2d.fill(rect);
 	}
@@ -133,6 +137,35 @@ public class Surface extends JPanel {
 		}
 	    }
 	}
+    }
+
+    public HashPoint convertCoords2Index(int x, int y) {
+	x -= pixel_offset.x; // remove x offset remainder
+	y -= pixel_offset.y; // remove y offset remainder
+	x /= grid_size;
+	y /= grid_size;
+	return new HashPoint(x, y);
+    }
+
+    public void clickCell(int x, int y) {
+	HashPoint pt = convertCoords2Index(x, y);
+
+	if (!hashedPoints.remove(pt)) {
+	    hashedPoints.add(pt);
+	    map.put(pt.x, pt.y);
+	}
+	repaint();
+
+    }
+
+    public void clickCell(int x, int y, HashSet<HashPoint> forbiddenList) {
+	HashPoint pt2Add = convertCoords2Index(x, y);
+	for (HashPoint pt : forbiddenList)
+	    if (pt.equals(pt2Add))
+		return;
+
+	clickCell(x, y);
+	forbiddenList.add(pt2Add);
     }
 
     private static Point getPatternLength(String[] strs) {
@@ -240,45 +273,3 @@ public class Surface extends JPanel {
     }
 
 }
-/**
- * SpringLayout sl_BOTTOM_PANEL = new SpringLayout();
- * sl_BOTTOM_PANEL.putConstraint(SpringLayout.WEST, label, 350,
- * SpringLayout.WEST, BOTTOM_PANEL);
- * sl_BOTTOM_PANEL.putConstraint(SpringLayout.SOUTH, label, 0,
- * SpringLayout.SOUTH, BOTTOM_PANEL);
- * sl_BOTTOM_PANEL.putConstraint(SpringLayout.EAST, label, -341,
- * SpringLayout.EAST, BOTTOM_PANEL);
- * sl_BOTTOM_PANEL.putConstraint(SpringLayout.NORTH, panel_2, 0,
- * SpringLayout.NORTH, lblLatency);
- * sl_BOTTOM_PANEL.putConstraint(SpringLayout.WEST, panel_2, 568,
- * SpringLayout.EAST, lblMs); sl_BOTTOM_PANEL.putConstraint(SpringLayout.SOUTH,
- * panel_2, 0, SpringLayout.SOUTH, lblLatency);
- * sl_BOTTOM_PANEL.putConstraint(SpringLayout.EAST, panel_2, -10,
- * SpringLayout.EAST, BOTTOM_PANEL);
- * sl_BOTTOM_PANEL.putConstraint(SpringLayout.WEST, lblLatency, 10,
- * SpringLayout.WEST, BOTTOM_PANEL);
- * sl_BOTTOM_PANEL.putConstraint(SpringLayout.EAST, lblLatency, -6,
- * SpringLayout.WEST, slider); sl_BOTTOM_PANEL.putConstraint(SpringLayout.NORTH,
- * lblMs, 0, SpringLayout.NORTH, lblLatency);
- * sl_BOTTOM_PANEL.putConstraint(SpringLayout.WEST, lblMs, 6, SpringLayout.EAST,
- * slider); sl_BOTTOM_PANEL.putConstraint(SpringLayout.SOUTH, lblMs, 0,
- * SpringLayout.SOUTH, lblLatency);
- * sl_BOTTOM_PANEL.putConstraint(SpringLayout.EAST, lblMs, 245,
- * SpringLayout.EAST, lblLatency);
- * sl_BOTTOM_PANEL.putConstraint(SpringLayout.WEST, slider, 79,
- * SpringLayout.WEST, BOTTOM_PANEL);
- * sl_BOTTOM_PANEL.putConstraint(SpringLayout.NORTH, slider, 2,
- * SpringLayout.NORTH, BOTTOM_PANEL);
- * sl_BOTTOM_PANEL.putConstraint(SpringLayout.SOUTH, slider, -2,
- * SpringLayout.SOUTH, BOTTOM_PANEL);
- * sl_BOTTOM_PANEL.putConstraint(SpringLayout.EAST, slider, -677,
- * SpringLayout.EAST, BOTTOM_PANEL);
- * sl_BOTTOM_PANEL.putConstraint(SpringLayout.NORTH, lblLatency, 2,
- * SpringLayout.NORTH, BOTTOM_PANEL);
- * sl_BOTTOM_PANEL.putConstraint(SpringLayout.SOUTH, lblLatency, -2,
- * SpringLayout.SOUTH, BOTTOM_PANEL);
- * sl_BOTTOM_PANEL.putConstraint(SpringLayout.NORTH, label, 2,
- * SpringLayout.NORTH, BOTTOM_PANEL); BOTTOM_PANEL.setLayout(sl_BOTTOM_PANEL);
- * BOTTOM_PANEL.add(lblLatency); BOTTOM_PANEL.add(slider);
- * BOTTOM_PANEL.add(lblMs); BOTTOM_PANEL.add(label); BOTTOM_PANEL.add(panel_2);
- */
