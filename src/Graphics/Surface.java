@@ -5,6 +5,8 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.event.ComponentEvent;
+import java.awt.event.MouseEvent;
 import java.util.HashSet;
 
 import javax.swing.JPanel;
@@ -39,7 +41,7 @@ import util.HashPoint;
  * 
  **************************************************************************/
 
-public class Surface extends JPanel {
+public class Surface extends SuperSurface {
 
     /**
      * 
@@ -63,7 +65,7 @@ public class Surface extends JPanel {
 	    "...O.O......O.O...", "....OO......OO...." };
 
     private HashSet<HashPoint> hashedPoints;
-    private HashSet<HashPoint> forbidList = new HashSet<>();
+
     private Hash map;
     public static final int ANIMATE_CELL_MODE = 0;
     public static final int ELIMINATE_CELL_MODE = 1;
@@ -77,10 +79,10 @@ public class Surface extends JPanel {
 	super();
 	setBounds(getX(), getY(), window_width, window_heigth);
 	setPattern(GUN);
-
     }
 
-    private void doDrawing(Graphics g) {
+    @Override
+    protected void doDrawing(Graphics g) {
 	Graphics2D g2d = (Graphics2D) g;
 	int w = getWidth();
 	int h = getHeight();
@@ -118,6 +120,7 @@ public class Surface extends JPanel {
 		continue;
 	    g2d.fill(rect);
 	}
+	System.gc();
     }
 
     private Rectangle createRectangle(HashPoint loc, HashPoint offset, int size) {
@@ -215,16 +218,6 @@ public class Surface extends JPanel {
 	hashedPoints = new HashSet<>(map.get());
     }
 
-    @Override
-    public void paintComponent(Graphics g) {
-	super.paintComponent(g);
-	doDrawing(g);
-    }
-
-    public static HashPoint convert2Point(int x, int y) {
-	return new HashPoint(x, y);
-    }
-
     /**********************************************************
      * GETTERS & SETTERS
      ***********************************************************/
@@ -292,25 +285,6 @@ public class Surface extends JPanel {
 
 	pixel_offset = convert2Point(indexOffset.x * grid_size, indexOffset.y * grid_size);
 
-    }
-
-    /**
-     * @return the recentlyDrawnPoints
-     */
-    public HashSet<HashPoint> getForbidList() {
-	return forbidList;
-    }
-
-    /**
-     * @param recentlyDrawnPoints
-     *                                the recentlyDrawnPoints to set
-     */
-    public void setForbidList(HashSet<HashPoint> recentlyDrawnPoints) {
-	this.forbidList = recentlyDrawnPoints;
-    }
-
-    public void resetForbidList() {
-	this.forbidList = new HashSet<>();
     }
 
 }

@@ -173,14 +173,12 @@ public class MainFrame extends JFrame implements Runnable {
 
 	Robot r = new Robot();
 	r.mouseMove(initX, initY);
-
+	surf.setLastDragCoordinates(initX, initY);
 	surf.addMouseMotionListener(new MouseMotionAdapter() {
-
-	    Point prevCoords = Surface.convert2Point(initX, initY);
 
 	    @Override
 	    public void mouseMoved(MouseEvent e) {
-		prevCoords = Surface.convert2Point(e.getX(), e.getY());
+		surf.setLastDragCoordinates(e.getX(), e.getY());
 	    }
 
 	    @Override
@@ -194,38 +192,24 @@ public class MainFrame extends JFrame implements Runnable {
 		}
 
 		/* DRAGGING... */
-		surf.addOffset(e.getX() - prevCoords.x, e.getY() - prevCoords.y);
+		surf.addOffset(e.getX() - surf.getLastDragCoordinates().x, e.getY() - surf.getLastDragCoordinates().y);
 		surf.repaint();
-		prevCoords = Surface.convert2Point(e.getX(), e.getY());
+		surf.setLastDragCoordinates(e.getX(), e.getY());
 
 	    }
 	});
-	surf.addComponentListener(new ComponentAdapter() {
-	    @Override
-	    public void componentResized(ComponentEvent e) {
-		surf.repaint();
-	    }
-	});
-	surf.addMouseWheelListener(new MouseWheelListener() {
-	    public void mouseWheelMoved(MouseWheelEvent e) {
+	
 
-		int notches = e.getWheelRotation();
-
-		int zoom = Math.abs(notches) / notches * ((ZOOM_IN_WHEN_SCROLL_UP) ? -1 : 1);
-		surf.setGridSize(surf.getGridSize() + zoom);
-		surf.repaint();
-	    }
-	});
 	surf.addMouseListener(new MouseAdapter() {
-	    @Override
-	    public void mouseReleased(MouseEvent e) {
-		surf.resetForbidList();
-	    }
 
 	    @Override
 	    public void mouseClicked(MouseEvent e) {
-		// if (drawButton.getState())
-		// surf.clickCell(e.getX(), e.getY());
+		if (drawButton.getState()) {
+		    buttonPause.setState(true);
+		    surf.clickCell(Surface.convert2Point(e.getX(), e.getY()), drawModeButton.getIndex());
+		    surf.repaint();
+		    return;
+		}
 	    }
 	});
 	slider.addChangeListener(new ChangeListener() {

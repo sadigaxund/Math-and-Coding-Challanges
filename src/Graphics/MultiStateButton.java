@@ -2,17 +2,12 @@ package Graphics;
 
 import java.awt.Image;
 import java.awt.Point;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
-import javax.swing.event.MouseInputListener;
-
 import Utils.JImages;
-import Utils.JUtil;
 
 public class MultiStateButton extends JButton implements MouseListener {
 
@@ -80,7 +75,6 @@ public class MultiStateButton extends JButton implements MouseListener {
 
     @Override
     public void mouseEntered(MouseEvent e) {
-	// TODO Auto-generated method stub
 
     }
 
