@@ -5,14 +5,9 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.event.ComponentEvent;
-import java.awt.event.MouseEvent;
 import java.util.HashSet;
 
-import javax.swing.JPanel;
-import pzemtsov.Hash;
-import pzemtsov.Hasher;
-import pzemtsov.Worker;
+import pzemtsov.HashGrid;
 import util.HashPoint;
 
 /***************************************************************************
@@ -41,39 +36,21 @@ import util.HashPoint;
  * 
  **************************************************************************/
 
-public class Surface extends SuperSurface {
+public class Surface extends SurfaceAdapter {
 
     /**
      * 
      */
     private static final long serialVersionUID = -8120139481082133405L;
 
+    private Color deadCellColor = new Color(21, 34, 56); // Darkest Blue
+    private Color gridColor = new Color(0, 80, 110); // Greenish Blue
+    private HashGrid map;
+    private HashSet<Point> forbidList = new HashSet<>();
     private int grid_size = 16;
-    private Color darkestBlue = new Color(21, 34, 56);
+    private Point pixel_offset;
 
-    private HashPoint pixel_offset;
-
-    private static final String[] ACORN = new String[] { "OO  OOO", ":::O:::", ":O" };
-    private static final String[] GUN = new String[] { "                        O             ",
-	    "                      O O             ", "            OO      OO            OO",
-	    "           O   O    OO            OO", "OO        O     O   OO", "OO        O   O OO    O O",
-	    "          O     O       O", "           O   O", "            OO" };
-
-    private static final String[] DEMONOID = new String[] { "....OO......OO....", "...O.O......O.O...",
-	    "...O..........O...", "OO.O..........O.OO", "OO.O.O..OO..O.O.OO", "...O.O.O..O.O.O...",
-	    "...O.O.O..O.O.O...", "OO.O.O..OO..O.O.OO", "OO.O..........O.OO", "...O..........O...",
-	    "...O.O......O.O...", "....OO......OO...." };
-
-    private HashSet<HashPoint> hashedPoints;
-
-    private Hash map;
-    public static final int ANIMATE_CELL_MODE = 0;
-    public static final int ELIMINATE_CELL_MODE = 1;
-    public static final int INVERT_CELL_MODE = 2;
-
-    // public static void main(String[] str) {
-    // System.out.println(getPatternLength(DEMONOID));
-    // }
+    public boolean ZOOM_IN_WHEN_SCROLL_UP = true;
 
     public Surface(int window_width, int window_heigth) {
 	super();
@@ -88,26 +65,27 @@ public class Surface extends SuperSurface {
 	int h = getHeight();
 
 	// Draw Background
-	g2d.setColor(darkestBlue);
+	g2d.setColor(deadCellColor);
 	g2d.fillRect(0, 0, w, h);
 
 	/* Render only visible dead cells */
-	g2d.setColor(new Color(0, 80, 110));
+	g2d.setColor(gridColor);
 	int x_off = pixel_offset.x % grid_size;
 	int y_off = pixel_offset.y % grid_size;
 
 	// +- 1 is for creating larger gridmap than the visible window frame
 	for (int i = -1; i < getWidth() / grid_size + 2; i++)
 	    for (int j = -1; j < getHeight() / grid_size + 2; j++) {
-		Rectangle rect = createRectangle(convert2Point(i, j), convert2Point(x_off, y_off), grid_size);
+		Rectangle rect = createRectangle(new Point(i, j), new Point(x_off, y_off), grid_size);
 		g2d.draw(rect);
 	    }
 
 	/* Render Alive Cells all over the coordinate system */
-	g2d.setColor(new Color(255, 255, 255));
-	for (HashPoint pt : hashedPoints) {
+	g2d.setColor(Color.WHITE);
+	HashSet<Point> hashedPoints = new HashSet<>(map.get());
+	for (Point pt : hashedPoints) {
 	    // RENDER OPTIMIZATION
-	    Rectangle rect = createRectangle(convert2Point(pt.x, pt.y), pixel_offset, grid_size);
+	    Rectangle rect = createRectangle(new Point(pt.x, pt.y), pixel_offset, grid_size);
 	    /*
 	     * Note: by adding some variable instead of 0, you can adjust the margin from
 	     * where the cells should be rendered. Forex.: if negative value a cell will be
@@ -120,126 +98,98 @@ public class Surface extends SuperSurface {
 		continue;
 	    g2d.fill(rect);
 	}
-	System.gc();
+
     }
 
-    private Rectangle createRectangle(HashPoint loc, HashPoint offset, int size) {
-	return new Rectangle(offset.x + loc.x * size, offset.y + loc.y * size, size, size);
-    }
-
-    public static void put(Worker w, String[] p, HashPoint offset) {
-	for (int y = 0; y < p.length; y++) {
-	    for (int x = 0; x < p[y].length(); x++) {
-		if (p[y].charAt(x) == 'O') {
-		    w.put(x - offset.x, y - offset.y);
-		}
-	    }
-	}
-    }
-
-    public static void put(Worker w, String[] p) {
-	put(w, p, convert2Point(0, 0));
-    }
-
-    public static void put(Worker w, String[] p, int x, int y) {
-	put(w, p, convert2Point(x, y));
-    }
-
-    public HashPoint convertCoords2Index(HashPoint pt) {
+    public HashPoint getLocationOnMap(Point pt) {
 	pt.x -= pixel_offset.x; // remove x offset remainder
 	pt.y -= pixel_offset.y; // remove y offset remainder
 	pt.x /= grid_size;
 	pt.y /= grid_size;
-	return pt;
+	return new HashPoint(pt);
     }
 
-    public HashPoint convertCoords2Index(int x, int y) {
-	return convertCoords2Index(convert2Point(x, y));
+    public HashPoint getLocationOnMap(int x, int y) {
+	return getLocationOnMap(new Point(x, y));
     }
 
-    public void clickCell(HashPoint location, int mode) {
-	HashPoint pt = convertCoords2Index(location.x, location.y);
+    public void draw(Point point, int mode) {
+	// Convert location on the screen to the location on the map
+	Point pt = getLocationOnMap(point);
 
+	if (mode != ELIMINATE_CELL_MODE && forbidList.contains(pt))
+	    return; // return if the current cell has already being modified while mouse is pressed
+	else
+	    forbidList.add(pt); // add cell to the list of modified cells
+	// DRAWING ...
 	switch (mode) {
 	case ANIMATE_CELL_MODE:
-	    if (forbidList.contains(pt))
-		return;
-	    forbidList.add(pt);
-	    map.put(pt.x, pt.y);
+	    map.put(pt.x, pt.y); // add coords. into the map to make it alive cell
 	    break;
-
 	case ELIMINATE_CELL_MODE:
-	    map.remove(map.getLinkedCellObject(pt.x, pt.y));
+	    map.remove(map.getLinkedCellObject(pt.x, pt.y)); // remove coords. from the map to kill cell
 	    break;
 	case INVERT_CELL_MODE:
-	    if (forbidList.contains(pt))
-		return;
-	    forbidList.add(pt);
-	    if (!map.remove(map.getLinkedCellObject(pt.x, pt.y)))
+	    if (!map.remove(map.getLinkedCellObject(pt.x, pt.y))) // if the coords. were not possible to be removed, add
 		map.put(pt.x, pt.y);
-
 	    break;
-
 	}
-
-	hashedPoints = new HashSet<>(map.get());
 
     }
 
-    public void clickCell(int x, int y, int mode) {
-	clickCell(convert2Point(x, y), mode);
-    }
-
-    private static HashPoint getPatternLength(String[] strs) {
-	HashPoint retval = convert2Point(0, strs.length);
-
-	for (String str : strs) {
-	    int ind = 0;
-	    char[] inCh = str.toCharArray();
-	    for (int i = 0; i < inCh.length; i++) {
-		if (inCh[i] == 'O')
-		    ind = i;
-	    }
-	    if (ind > retval.x)
-		retval.x = ind;
-	}
-	retval.setLocation(retval.x + 1, retval.y + 1); // return length instead of index
-	return retval;
+    public void draw(int x, int y, int mode) {
+	draw(new Point(x, y), mode);
     }
 
     private void setPattern(String[] pattern) {
-	HashPoint patternSize = getPatternLength(pattern);
+	Point patternSize = getPatternLength(pattern);
 	int w = getWidth() / grid_size + 2;
 	int h = getHeight() / grid_size + 2;
-	pixel_offset = convert2Point(-(w - patternSize.x) / 2, -(h - patternSize.y) / 2);
-	map = new Hash(new Hasher());
+	pixel_offset = new Point(-(w - patternSize.x) / 2, -(h - patternSize.y) / 2);
+	map = new HashGrid();
 	map.reset();
 	put(map, pattern, pixel_offset);
-	hashedPoints = new HashSet<>(map.get());
+    }
+
+    public static void sleep(long ms) {
+	try {
+	    Thread.sleep(ms);
+	} catch (InterruptedException e) {
+	}
+
+    }
+
+    private void optimizedSleep() {
+	int temp = LATENCY;
+	while (LATENCY > 500 && temp > 0) {
+	    sleep(50);
+	    temp -= 50;
+	}
+
+	sleep((temp < 0) ? temp + 50 : LATENCY);
+    }
+
+    @Override
+    public void run() {
+	while (true) {
+	    optimizedSleep();
+
+	    if (paused)
+		continue;
+
+	    step();
+	    repaint();
+	}
     }
 
     /**********************************************************
      * GETTERS & SETTERS
      ***********************************************************/
-    /**
-     * @return the hashedHashPoints
-     */
-    public HashSet<HashPoint> getHashedPoints() {
-	return hashedPoints;
-    }
-
-    /**
-     * @param hashedHashPoints
-     *                             the hashedHashPoints to set
-     */
-    public void setHashedPoints(HashSet<HashPoint> hashedHashPoints) {
-	this.hashedPoints = hashedHashPoints;
-    }
 
     /**
      * @return the offset
      */
-    public HashPoint getOffset() {
+    public Point getOffset() {
 	return pixel_offset;
     }
 
@@ -258,7 +208,30 @@ public class Surface extends SuperSurface {
 
     public void step() {
 	map.step();
-	hashedPoints = new HashSet<>(map.get());
+    }
+
+    /**
+     * @param grid_size
+     *                      the grid_size to set
+     */
+    public void setGridSize(int size) {
+
+	Point indexOffset = new Point(pixel_offset.x / grid_size, pixel_offset.y / grid_size);
+
+	grid_size = size;
+
+	if (grid_size < 4)
+	    grid_size = 4;
+	if (grid_size > 20)
+	    grid_size = 20;
+
+	pixel_offset = new Point(indexOffset.x * grid_size, indexOffset.y * grid_size);
+
+    }
+
+    @Override
+    protected int getZoomCoefficient(int notches) {
+	return Math.abs(notches) / notches * ((ZOOM_IN_WHEN_SCROLL_UP) ? -1 : 1);
     }
 
     /**
@@ -269,22 +242,22 @@ public class Surface extends SuperSurface {
     }
 
     /**
-     * @param grid_size
-     *                      the grid_size to set
+     * @return the recentlyDrawnPoints
      */
-    public void setGridSize(int size) {
+    public HashSet<Point> getForbidList() {
+	return forbidList;
+    }
 
-	HashPoint indexOffset = convert2Point(pixel_offset.x / grid_size, pixel_offset.y / grid_size);
+    /**
+     * @param recentlyDrawnPoints
+     *                                the recentlyDrawnPoints to set
+     */
+    public void setForbidList(HashSet<Point> recentlyDrawnPoints) {
+	this.forbidList = recentlyDrawnPoints;
+    }
 
-	grid_size = size;
-
-	if (grid_size < 4)
-	    grid_size = 4;
-	if (grid_size > 20)
-	    grid_size = 20;
-
-	pixel_offset = convert2Point(indexOffset.x * grid_size, indexOffset.y * grid_size);
-
+    public void resetForbidList() {
+	this.forbidList = new HashSet<>();
     }
 
 }

@@ -4,15 +4,13 @@ import static util.LongUtil.DX;
 import static util.LongUtil.DY;
 import static util.LongUtil.fromPoint;
 
+import java.awt.Point;
 import java.util.HashSet;
 import java.util.Set;
 
-import util.HashPoint;
-
-public final class Hash extends Worker {
+public final class HashGrid extends Worker {
     public static final int HASH_CAPACITY = 256 * 1024;
 
-    private final Hasher hasher;
     private final LinkedCell[] table;
     private int count = 0;
     LinkedCell full_list;
@@ -21,9 +19,9 @@ public final class Hash extends Worker {
     private LinkedCell[] toReset = new LinkedCell[128];
     private LinkedCell[] toSet = new LinkedCell[128];
 
-    public Hash(Hasher hash) {
-	this.hasher = hash;
-	this.name = getClass().getName() + ":" + hash.getClass().getName();
+    public HashGrid() {
+
+	this.name = getClass().getName();
 	this.table = new LinkedCell[HASH_CAPACITY];
 	full_list = new LinkedCell(0, 0);
 	full_list.prev = full_list.next = full_list;
@@ -43,7 +41,7 @@ public final class Hash extends Worker {
     }
 
     private int hash(long key) {
-	return hasher.hashCode(key);
+	return (int) (key % 946840871);
     }
 
     private int index(int hash) {
@@ -106,8 +104,8 @@ public final class Hash extends Worker {
     }
 
     @Override
-    public Set<HashPoint> get() {
-	final HashSet<HashPoint> result = new HashSet<HashPoint>();
+    public Set<Point> get() {
+	final HashSet<Point> result = new HashSet<Point>();
 	for (LinkedCell cell = full_list.next; cell != full_list; cell = cell.next) {
 	    if (cell.live) {
 		result.add(cell.toPoint());

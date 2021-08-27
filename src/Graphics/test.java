@@ -26,40 +26,13 @@ package Graphics;
  * 
  **************************************************************************/
 
-import java.awt.AWTException;
-import java.awt.Component;
 import java.awt.EventQueue;
-import java.awt.FlowLayout;
-import java.awt.Graphics2D;
-import java.awt.Image;
-import java.awt.Rectangle;
-import java.awt.Robot;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseMotionAdapter;
-import java.awt.event.MouseWheelEvent;
-import java.awt.event.MouseWheelListener;
-import java.awt.image.BufferedImage;
-import javax.swing.GroupLayout;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
 import javax.swing.SpringLayout;
-import javax.swing.UIManager;
-import javax.swing.GroupLayout.Alignment;
-import javax.swing.Icon;
-import javax.swing.border.BevelBorder;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-
 import Utils.JHardware;
-import Utils.JImages;
-import util.HashPoint;
 import javax.swing.border.MatteBorder;
 import java.awt.Color;
 import java.awt.Font;
@@ -153,7 +126,7 @@ public class test extends JFrame implements Runnable {
 
 	JLabel lblLatency = new JLabel("DELAY");
 	lblLatency.setHorizontalAlignment(SwingConstants.CENTER);
-	lblLatency.setFont(new Font("Arial", Font.BOLD, 12));
+	lblLatency.setFont(new Font("Calibri Light", Font.BOLD, 15));
 	JSlider slider = new JSlider(JSlider.HORIZONTAL, 0, 3000, 1000);
 	slider.setOpaque(false);
 	slider.setMajorTickSpacing(1000);
@@ -161,7 +134,7 @@ public class test extends JFrame implements Runnable {
 	slider.setPaintTicks(true);
 	JLabel	lblMs = new JLabel("1000 ms");
 	lblMs.setHorizontalAlignment(SwingConstants.LEADING);
-	lblMs.setFont(new Font("Arial", Font.BOLD, 12));
+	lblMs.setFont(new Font("Calibri Light", Font.BOLD, 14));
 	BiStateButton buttonPause = new BiStateButton("pause", "play", buttonIconSize);
 	buttonPause.setState(true);
 	BiStateButton drawButton = new BiStateButton("select", "pencil", buttonIconSize + 8);

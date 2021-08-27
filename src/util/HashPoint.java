@@ -28,11 +28,14 @@ package util;
 import java.awt.Point;
 
 public class HashPoint extends Point {
-  
 
     public HashPoint(int x, int y) {
 	this.x = x;
 	this.y = y;
+    }
+
+    public HashPoint(Point pt) {
+	this(pt.x, pt.y);
     }
 
     @Override
