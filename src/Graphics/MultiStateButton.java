@@ -4,14 +4,17 @@ import java.awt.Image;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.event.MouseInputListener;
 
 import Utils.JImages;
 import Utils.JUtil;
 
-public class MultiStateButton extends JButton implements ActionListener {
+public class MultiStateButton extends JButton implements MouseListener {
 
     /**
      * 
@@ -24,7 +27,7 @@ public class MultiStateButton extends JButton implements ActionListener {
 
     public MultiStateButton(Point iconSize, String... icons) {
 	super();
-	addActionListener(this);
+	addMouseListener(this);
 	this.icons = icons;
 	this.iconSize = iconSize;
 	setIndex(0);
@@ -39,15 +42,17 @@ public class MultiStateButton extends JButton implements ActionListener {
 	this(size, size, icons);
     }
 
-    @Override
-    public void actionPerformed(ActionEvent e) {
-	traverse();
-    }
-
-    public void traverse() {
+    public void inc() {
 	index++;
 	if (index >= icons.length)
 	    index = 0;
+	setIndex(index);
+    }
+
+    public void dec() {
+	index--;
+	if (index < 0)
+	    index = icons.length - 1;
 	setIndex(index);
     }
 
@@ -60,5 +65,40 @@ public class MultiStateButton extends JButton implements ActionListener {
 	Image Icon = JImages.scaleImage(new ImageIcon("./res/" + icons[index] + ".png").getImage(), iconSize.x,
 		iconSize.y);
 	setIcon(new ImageIcon(Icon));
+    }
+
+    @Override
+    public void mouseClicked(MouseEvent e) {
+
+	if (e.getButton() == 1)
+	    inc();
+
+	if (e.getButton() == 3)
+	    dec();
+
+    }
+
+    @Override
+    public void mouseEntered(MouseEvent e) {
+	// TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void mouseExited(MouseEvent e) {
+	// TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void mousePressed(MouseEvent e) {
+	// TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void mouseReleased(MouseEvent e) {
+	// TODO Auto-generated method stub
+
     }
 }

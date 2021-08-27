@@ -79,22 +79,25 @@ public final class Hash extends Worker {
 	++count;
     }
 
-    public void remove(LinkedCell cell) {
+    public boolean remove(LinkedCell cell) {
+	if (cell == null)
+	    return false;
 	int index = cell.index;
 	if (table[index] == cell) {
 	    table[index] = cell.table_next;
 	    --count;
 	    remove_from_list(cell);
-	    return;
+	    return true;
 	}
 	for (LinkedCell c = table[index]; c != null; c = c.table_next) {
 	    if (c.table_next == cell) {
 		c.table_next = cell.table_next;
 		--count;
 		remove_from_list(cell);
-		return;
+		return true;
 	    }
 	}
+	return false;
     }
 
     @Override
@@ -113,6 +116,17 @@ public final class Hash extends Worker {
 	return result;
     }
 
+    public LinkedCell getLinkedCellObject(int x, int y) {
+	long pos = fromPoint(x, y);
+	for (LinkedCell cell = full_list.next; cell != full_list; cell = cell.next) {
+	    if (cell.live && cell.equals(pos)) {
+		return cell;
+
+	    }
+	}
+	return null;
+    }
+
     private void inc(long w) {
 	LinkedCell c = get(w);
 	if (c == null) {
@@ -124,7 +138,7 @@ public final class Hash extends Worker {
 
     private void dec(long w) {
 	LinkedCell c = get(w);
-	if (!c.dec() && !c.live) {
+	if (c != null && !c.dec() && !c.live) {
 	    remove(c);
 	}
     }
@@ -195,4 +209,5 @@ public final class Hash extends Worker {
 	    reset(toReset[i]);
 	}
     }
+
 }

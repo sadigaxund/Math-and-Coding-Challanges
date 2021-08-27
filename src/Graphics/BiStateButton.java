@@ -1,9 +1,8 @@
 package Graphics;
 
 import java.awt.Point;
-import java.awt.event.ActionListener;
 
-public class BiStateButton extends MultiStateButton implements ActionListener {
+public class BiStateButton extends MultiStateButton  {
 
     /**
      * 
@@ -30,5 +29,6 @@ public class BiStateButton extends MultiStateButton implements ActionListener {
     public void setState(boolean b) {
 	super.setIndex((b) ? 1 : 0);
     }
+
 
 }

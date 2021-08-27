@@ -106,7 +106,7 @@ public class test extends JFrame implements Runnable {
      */
     public static int LATENCY = 1000;
 
-    public static final int BOTTOM_PANEL_HEIGHT = 40;
+    public static final int BOTTOM_PANEL_HEIGHT = 50;
 
     public boolean PAUSE = true;
 
@@ -119,6 +119,7 @@ public class test extends JFrame implements Runnable {
     }
 
     private void initUI() {
+
 	setTitle("Game of Life");
 	setSize(WINDOW_WIDTH, WINDOW_HEIGHT);
 	setLocationRelativeTo(null);
@@ -130,22 +131,25 @@ public class test extends JFrame implements Runnable {
 	surf = new Surface(WINDOW_WIDTH, WINDOW_HEIGHT);
 
 	SpringLayout springLayout = new SpringLayout();
-	springLayout.putConstraint(SpringLayout.SOUTH, surf, 0, SpringLayout.NORTH, BOTTOM_PANEL);
-	springLayout.putConstraint(SpringLayout.NORTH, BOTTOM_PANEL, 537, SpringLayout.NORTH, getContentPane());
-	springLayout.putConstraint(SpringLayout.WEST, BOTTOM_PANEL, 0, SpringLayout.WEST, getContentPane());
-	springLayout.putConstraint(SpringLayout.EAST, BOTTOM_PANEL, 0, SpringLayout.EAST, getContentPane());
-	springLayout.putConstraint(SpringLayout.SOUTH, BOTTOM_PANEL, 577, SpringLayout.NORTH, getContentPane());
-
 	springLayout.putConstraint(SpringLayout.NORTH, surf, 0, SpringLayout.NORTH, getContentPane());
+	springLayout.putConstraint(SpringLayout.SOUTH, surf, 0, SpringLayout.NORTH, BOTTOM_PANEL);
 	springLayout.putConstraint(SpringLayout.WEST, surf, 0, SpringLayout.WEST, getContentPane());
 	springLayout.putConstraint(SpringLayout.EAST, surf, 0, SpringLayout.EAST, getContentPane());
+
+	springLayout.putConstraint(SpringLayout.NORTH, BOTTOM_PANEL, -BOTTOM_PANEL_HEIGHT, SpringLayout.SOUTH,
+		getContentPane());
+	springLayout.putConstraint(SpringLayout.WEST, BOTTOM_PANEL, 0, SpringLayout.WEST, getContentPane());
+	springLayout.putConstraint(SpringLayout.EAST, BOTTOM_PANEL, 0, SpringLayout.EAST, getContentPane());
+	springLayout.putConstraint(SpringLayout.SOUTH, BOTTOM_PANEL, 0, SpringLayout.SOUTH, getContentPane());
 	getContentPane().setLayout(springLayout);
 
-	int MARGIN = 5;
+	int X_MARGIN = 5;
+	int Y_MARGIN = 5;
 	int latencyLblW = 50;
 	int msLblW = 60;
 	int sliderW = 250;
-	int pauseSize = 25;
+	int buttonSize = 40;
+	int buttonIconSize = 25;
 
 	JLabel lblLatency = new JLabel("DELAY");
 	lblLatency.setHorizontalAlignment(SwingConstants.CENTER);
@@ -155,56 +159,59 @@ public class test extends JFrame implements Runnable {
 	slider.setMajorTickSpacing(1000);
 	slider.setMinorTickSpacing(500);
 	slider.setPaintTicks(true);
-	JLabel lblMs = new JLabel("1000 ms");
+	JLabel	lblMs = new JLabel("1000 ms");
 	lblMs.setHorizontalAlignment(SwingConstants.LEADING);
 	lblMs.setFont(new Font("Arial", Font.BOLD, 12));
-	BiStateButton buttonPause = new BiStateButton("play", "pause", pauseSize);
-	BiStateButton buttonDraw = new BiStateButton("pencil", "select", pauseSize + 8);
-
-	MultiStateButton drawModeButton = new MultiStateButton(pauseSize, "white", "darkestBlue", "inverted");
+	BiStateButton buttonPause = new BiStateButton("pause", "play", buttonIconSize);
+	buttonPause.setState(true);
+	BiStateButton drawButton = new BiStateButton("select", "pencil", buttonIconSize + 8);
+	MultiStateButton drawModeButton = new MultiStateButton(buttonIconSize, "white", "darkestBlue", "inverted");
 
 	SpringLayout sl_BOTTOM_PANEL = new SpringLayout();
-	sl_BOTTOM_PANEL.putConstraint(SpringLayout.NORTH, drawModeButton, 0, SpringLayout.NORTH, buttonPause);
-	sl_BOTTOM_PANEL.putConstraint(SpringLayout.WEST, drawModeButton, 6, SpringLayout.EAST, buttonDraw);
-	sl_BOTTOM_PANEL.putConstraint(SpringLayout.SOUTH, drawModeButton, 0, SpringLayout.SOUTH, slider);
-	sl_BOTTOM_PANEL.putConstraint(SpringLayout.EAST, drawModeButton, -463, SpringLayout.EAST, BOTTOM_PANEL);
-	sl_BOTTOM_PANEL.putConstraint(SpringLayout.EAST, buttonDraw, -509, SpringLayout.EAST, BOTTOM_PANEL);
 
-	sl_BOTTOM_PANEL.putConstraint(SpringLayout.EAST, lblLatency, latencyLblW, SpringLayout.WEST, BOTTOM_PANEL);
-	sl_BOTTOM_PANEL.putConstraint(SpringLayout.WEST, lblLatency, MARGIN * 2, SpringLayout.WEST, BOTTOM_PANEL);
-	sl_BOTTOM_PANEL.putConstraint(SpringLayout.NORTH, lblLatency, MARGIN - 2, SpringLayout.NORTH, BOTTOM_PANEL);
-	sl_BOTTOM_PANEL.putConstraint(SpringLayout.SOUTH, lblLatency, -MARGIN, SpringLayout.SOUTH, BOTTOM_PANEL);
+	sl_BOTTOM_PANEL.putConstraint(SpringLayout.WEST, lblLatency, X_MARGIN, SpringLayout.WEST, BOTTOM_PANEL);
+	sl_BOTTOM_PANEL.putConstraint(SpringLayout.EAST, lblLatency, latencyLblW + X_MARGIN, SpringLayout.WEST,
+		BOTTOM_PANEL);
+	sl_BOTTOM_PANEL.putConstraint(SpringLayout.NORTH, lblLatency, Y_MARGIN - 3, SpringLayout.NORTH, BOTTOM_PANEL);
+	sl_BOTTOM_PANEL.putConstraint(SpringLayout.SOUTH, lblLatency, -Y_MARGIN, SpringLayout.SOUTH, BOTTOM_PANEL);
 
-	sl_BOTTOM_PANEL.putConstraint(SpringLayout.EAST, slider, -913 + sliderW, SpringLayout.EAST, BOTTOM_PANEL);
-	sl_BOTTOM_PANEL.putConstraint(SpringLayout.WEST, slider, MARGIN, SpringLayout.EAST, lblLatency);
-	sl_BOTTOM_PANEL.putConstraint(SpringLayout.NORTH, slider, MARGIN, SpringLayout.NORTH, BOTTOM_PANEL);
+	sl_BOTTOM_PANEL.putConstraint(SpringLayout.WEST, slider, X_MARGIN, SpringLayout.EAST, lblLatency);
+	sl_BOTTOM_PANEL.putConstraint(SpringLayout.EAST, slider, sliderW + X_MARGIN, SpringLayout.WEST, lblLatency);
+	sl_BOTTOM_PANEL.putConstraint(SpringLayout.NORTH, slider, Y_MARGIN + 2, SpringLayout.NORTH, BOTTOM_PANEL);
 	sl_BOTTOM_PANEL.putConstraint(SpringLayout.SOUTH, slider, 0, SpringLayout.SOUTH, BOTTOM_PANEL);
 
-	sl_BOTTOM_PANEL.putConstraint(SpringLayout.EAST, lblMs, -663 + msLblW, SpringLayout.EAST, BOTTOM_PANEL);
-	sl_BOTTOM_PANEL.putConstraint(SpringLayout.WEST, lblMs, MARGIN, SpringLayout.EAST, slider);
-	sl_BOTTOM_PANEL.putConstraint(SpringLayout.NORTH, lblMs, MARGIN - 2, SpringLayout.NORTH, BOTTOM_PANEL);
-	sl_BOTTOM_PANEL.putConstraint(SpringLayout.SOUTH, lblMs, -MARGIN, SpringLayout.SOUTH, BOTTOM_PANEL);
+	sl_BOTTOM_PANEL.putConstraint(SpringLayout.WEST, lblMs, X_MARGIN, SpringLayout.EAST, slider);
+	sl_BOTTOM_PANEL.putConstraint(SpringLayout.EAST, lblMs, msLblW + X_MARGIN, SpringLayout.EAST, slider);
+	sl_BOTTOM_PANEL.putConstraint(SpringLayout.NORTH, lblMs, Y_MARGIN - 3, SpringLayout.NORTH, BOTTOM_PANEL);
+	sl_BOTTOM_PANEL.putConstraint(SpringLayout.SOUTH, lblMs, -Y_MARGIN, SpringLayout.SOUTH, BOTTOM_PANEL);
 
-	sl_BOTTOM_PANEL.putConstraint(SpringLayout.NORTH, buttonPause, 0, SpringLayout.NORTH, BOTTOM_PANEL);
-	sl_BOTTOM_PANEL.putConstraint(SpringLayout.SOUTH, buttonPause, 0, SpringLayout.SOUTH, slider);
+	sl_BOTTOM_PANEL.putConstraint(SpringLayout.WEST, buttonPause, X_MARGIN, SpringLayout.EAST, lblMs);
+	sl_BOTTOM_PANEL.putConstraint(SpringLayout.EAST, buttonPause, buttonSize + X_MARGIN, SpringLayout.EAST, lblMs);
+	sl_BOTTOM_PANEL.putConstraint(SpringLayout.NORTH, buttonPause, Y_MARGIN, SpringLayout.NORTH, BOTTOM_PANEL);
+	sl_BOTTOM_PANEL.putConstraint(SpringLayout.SOUTH, buttonPause, -Y_MARGIN, SpringLayout.SOUTH, BOTTOM_PANEL);
 
-	sl_BOTTOM_PANEL.putConstraint(SpringLayout.NORTH, buttonDraw, 0, SpringLayout.NORTH, BOTTOM_PANEL);
-	sl_BOTTOM_PANEL.putConstraint(SpringLayout.SOUTH, buttonDraw, 0, SpringLayout.SOUTH, slider);
-	sl_BOTTOM_PANEL.putConstraint(SpringLayout.WEST, buttonPause, 6, SpringLayout.EAST, lblMs);
-	sl_BOTTOM_PANEL.putConstraint(SpringLayout.EAST, buttonPause, -556, SpringLayout.EAST, BOTTOM_PANEL);
-	sl_BOTTOM_PANEL.putConstraint(SpringLayout.WEST, buttonDraw, 6, SpringLayout.EAST, buttonPause);
+	sl_BOTTOM_PANEL.putConstraint(SpringLayout.WEST, drawButton, X_MARGIN, SpringLayout.EAST, buttonPause);
+	sl_BOTTOM_PANEL.putConstraint(SpringLayout.EAST, drawButton, buttonSize + X_MARGIN, SpringLayout.EAST,
+		buttonPause);
+	sl_BOTTOM_PANEL.putConstraint(SpringLayout.NORTH, drawButton, Y_MARGIN, SpringLayout.NORTH, BOTTOM_PANEL);
+	sl_BOTTOM_PANEL.putConstraint(SpringLayout.SOUTH, drawButton, -Y_MARGIN, SpringLayout.SOUTH, BOTTOM_PANEL);
+
+	sl_BOTTOM_PANEL.putConstraint(SpringLayout.WEST, drawModeButton, X_MARGIN, SpringLayout.EAST, drawButton);
+	sl_BOTTOM_PANEL.putConstraint(SpringLayout.EAST, drawModeButton, buttonSize + X_MARGIN, SpringLayout.EAST,
+		drawButton);
+	sl_BOTTOM_PANEL.putConstraint(SpringLayout.NORTH, drawModeButton, Y_MARGIN, SpringLayout.NORTH, BOTTOM_PANEL);
+	sl_BOTTOM_PANEL.putConstraint(SpringLayout.SOUTH, drawModeButton, -Y_MARGIN, SpringLayout.SOUTH, BOTTOM_PANEL);
 
 	BOTTOM_PANEL.setLayout(sl_BOTTOM_PANEL);
 	BOTTOM_PANEL.add(lblLatency);
 	BOTTOM_PANEL.add(slider);
 	BOTTOM_PANEL.add(lblMs);
 	BOTTOM_PANEL.add(buttonPause);
-	BOTTOM_PANEL.add(buttonDraw);
+	BOTTOM_PANEL.add(drawButton);
 	BOTTOM_PANEL.add(drawModeButton);
 
 	getContentPane().add(BOTTOM_PANEL);
 	getContentPane().add(surf);
-
     }
 
     public static void main(String[] args) {

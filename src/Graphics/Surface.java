@@ -5,15 +5,11 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.util.ArrayList;
 import java.util.HashSet;
 
 import javax.swing.JPanel;
-import javax.swing.SpringLayout;
-
 import pzemtsov.Hash;
 import pzemtsov.Hasher;
-import pzemtsov.Life;
 import pzemtsov.Worker;
 import util.HashPoint;
 
@@ -53,8 +49,7 @@ public class Surface extends JPanel {
     private int grid_size = 16;
     private Color darkestBlue = new Color(21, 34, 56);
 
-    private Point windowSize;
-    private Point pixel_offset;
+    private HashPoint pixel_offset;
 
     private static final String[] ACORN = new String[] { "OO  OOO", ":::O:::", ":O" };
     private static final String[] GUN = new String[] { "                        O             ",
@@ -68,7 +63,11 @@ public class Surface extends JPanel {
 	    "...O.O......O.O...", "....OO......OO...." };
 
     private HashSet<HashPoint> hashedPoints;
+    private HashSet<HashPoint> forbidList = new HashSet<>();
     private Hash map;
+    public static final int ANIMATE_CELL_MODE = 0;
+    public static final int ELIMINATE_CELL_MODE = 1;
+    public static final int INVERT_CELL_MODE = 2;
 
     // public static void main(String[] str) {
     // System.out.println(getPatternLength(DEMONOID));
@@ -76,7 +75,7 @@ public class Surface extends JPanel {
 
     public Surface(int window_width, int window_heigth) {
 	super();
-	windowSize = new Point(window_width, window_heigth);
+	setBounds(getX(), getY(), window_width, window_heigth);
 	setPattern(GUN);
 
     }
@@ -96,9 +95,9 @@ public class Surface extends JPanel {
 	int y_off = pixel_offset.y % grid_size;
 
 	// +- 1 is for creating larger gridmap than the visible window frame
-	for (int i = -1; i < windowSize.x / grid_size + 1; i++)
-	    for (int j = -1; j < windowSize.y / grid_size + 1; j++) {
-		Rectangle rect = createRectangle(new Point(i, j), new Point(x_off, y_off), grid_size);
+	for (int i = -1; i < getWidth() / grid_size + 2; i++)
+	    for (int j = -1; j < getHeight() / grid_size + 2; j++) {
+		Rectangle rect = createRectangle(convert2Point(i, j), convert2Point(x_off, y_off), grid_size);
 		g2d.draw(rect);
 	    }
 
@@ -106,7 +105,7 @@ public class Surface extends JPanel {
 	g2d.setColor(new Color(255, 255, 255));
 	for (HashPoint pt : hashedPoints) {
 	    // RENDER OPTIMIZATION
-	    Rectangle rect = createRectangle(new Point(pt.x, pt.y), pixel_offset, grid_size);
+	    Rectangle rect = createRectangle(convert2Point(pt.x, pt.y), pixel_offset, grid_size);
 	    /*
 	     * Note: by adding some variable instead of 0, you can adjust the margin from
 	     * where the cells should be rendered. Forex.: if negative value a cell will be
@@ -121,15 +120,11 @@ public class Surface extends JPanel {
 	}
     }
 
-    private Rectangle createRectangle(Point loc, Point offset, int size) {
+    private Rectangle createRectangle(HashPoint loc, HashPoint offset, int size) {
 	return new Rectangle(offset.x + loc.x * size, offset.y + loc.y * size, size, size);
     }
 
-    public static void put(Worker w, String[] p) {
-	put(w, p, new Point(0, 0));
-    }
-
-    public static void put(Worker w, String[] p, Point offset) {
+    public static void put(Worker w, String[] p, HashPoint offset) {
 	for (int y = 0; y < p.length; y++) {
 	    for (int x = 0; x < p[y].length(); x++) {
 		if (p[y].charAt(x) == 'O') {
@@ -139,37 +134,61 @@ public class Surface extends JPanel {
 	}
     }
 
+    public static void put(Worker w, String[] p) {
+	put(w, p, convert2Point(0, 0));
+    }
+
+    public static void put(Worker w, String[] p, int x, int y) {
+	put(w, p, convert2Point(x, y));
+    }
+
+    public HashPoint convertCoords2Index(HashPoint pt) {
+	pt.x -= pixel_offset.x; // remove x offset remainder
+	pt.y -= pixel_offset.y; // remove y offset remainder
+	pt.x /= grid_size;
+	pt.y /= grid_size;
+	return pt;
+    }
+
     public HashPoint convertCoords2Index(int x, int y) {
-	x -= pixel_offset.x; // remove x offset remainder
-	y -= pixel_offset.y; // remove y offset remainder
-	x /= grid_size;
-	y /= grid_size;
-	return new HashPoint(x, y);
+	return convertCoords2Index(convert2Point(x, y));
     }
 
-    public void clickCell(int x, int y) {
-	HashPoint pt = convertCoords2Index(x, y);
+    public void clickCell(HashPoint location, int mode) {
+	HashPoint pt = convertCoords2Index(location.x, location.y);
 
-	if (!hashedPoints.remove(pt)) {
-	    hashedPoints.add(pt);
-	    map.put(pt.x, pt.y);
-	}
-	repaint();
-
-    }
-
-    public void clickCell(int x, int y, HashSet<HashPoint> forbiddenList) {
-	HashPoint pt2Add = convertCoords2Index(x, y);
-	for (HashPoint pt : forbiddenList)
-	    if (pt.equals(pt2Add))
+	switch (mode) {
+	case ANIMATE_CELL_MODE:
+	    if (forbidList.contains(pt))
 		return;
+	    forbidList.add(pt);
+	    map.put(pt.x, pt.y);
+	    break;
 
-	clickCell(x, y);
-	forbiddenList.add(pt2Add);
+	case ELIMINATE_CELL_MODE:
+	    map.remove(map.getLinkedCellObject(pt.x, pt.y));
+	    break;
+	case INVERT_CELL_MODE:
+	    if (forbidList.contains(pt))
+		return;
+	    forbidList.add(pt);
+	    if (!map.remove(map.getLinkedCellObject(pt.x, pt.y)))
+		map.put(pt.x, pt.y);
+
+	    break;
+
+	}
+
+	hashedPoints = new HashSet<>(map.get());
+
     }
 
-    private static Point getPatternLength(String[] strs) {
-	Point retval = new Point(0, strs.length);
+    public void clickCell(int x, int y, int mode) {
+	clickCell(convert2Point(x, y), mode);
+    }
+
+    private static HashPoint getPatternLength(String[] strs) {
+	HashPoint retval = convert2Point(0, strs.length);
 
 	for (String str : strs) {
 	    int ind = 0;
@@ -186,10 +205,10 @@ public class Surface extends JPanel {
     }
 
     private void setPattern(String[] pattern) {
-	Point patternSize = getPatternLength(pattern);
-	int w = windowSize.x / grid_size + 2;
-	int h = windowSize.y / grid_size + 2;
-	pixel_offset = new Point(-(w - patternSize.x) / 2, -(h - patternSize.y) / 2);
+	HashPoint patternSize = getPatternLength(pattern);
+	int w = getWidth() / grid_size + 2;
+	int h = getHeight() / grid_size + 2;
+	pixel_offset = convert2Point(-(w - patternSize.x) / 2, -(h - patternSize.y) / 2);
 	map = new Hash(new Hasher());
 	map.reset();
 	put(map, pattern, pixel_offset);
@@ -202,28 +221,32 @@ public class Surface extends JPanel {
 	doDrawing(g);
     }
 
+    public static HashPoint convert2Point(int x, int y) {
+	return new HashPoint(x, y);
+    }
+
     /**********************************************************
      * GETTERS & SETTERS
      ***********************************************************/
     /**
-     * @return the hashedPoints
+     * @return the hashedHashPoints
      */
     public HashSet<HashPoint> getHashedPoints() {
 	return hashedPoints;
     }
 
     /**
-     * @param hashedPoints
-     *                         the hashedPoints to set
+     * @param hashedHashPoints
+     *                             the hashedHashPoints to set
      */
-    public void setHashedPoints(HashSet<HashPoint> hashedPoints) {
-	this.hashedPoints = hashedPoints;
+    public void setHashedPoints(HashSet<HashPoint> hashedHashPoints) {
+	this.hashedPoints = hashedHashPoints;
     }
 
     /**
      * @return the offset
      */
-    public Point getOffset() {
+    public HashPoint getOffset() {
 	return pixel_offset;
     }
 
@@ -243,7 +266,6 @@ public class Surface extends JPanel {
     public void step() {
 	map.step();
 	hashedPoints = new HashSet<>(map.get());
-	repaint();
     }
 
     /**
@@ -259,17 +281,36 @@ public class Surface extends JPanel {
      */
     public void setGridSize(int size) {
 
-	Point indexOffset = new Point(pixel_offset.x / grid_size, pixel_offset.y / grid_size);
+	HashPoint indexOffset = convert2Point(pixel_offset.x / grid_size, pixel_offset.y / grid_size);
 
 	grid_size = size;
 
-	if (grid_size < 5)
-	    grid_size = 5;
+	if (grid_size < 4)
+	    grid_size = 4;
 	if (grid_size > 20)
 	    grid_size = 20;
 
-	pixel_offset = new Point(indexOffset.x * grid_size, indexOffset.y * grid_size);
+	pixel_offset = convert2Point(indexOffset.x * grid_size, indexOffset.y * grid_size);
 
+    }
+
+    /**
+     * @return the recentlyDrawnPoints
+     */
+    public HashSet<HashPoint> getForbidList() {
+	return forbidList;
+    }
+
+    /**
+     * @param recentlyDrawnPoints
+     *                                the recentlyDrawnPoints to set
+     */
+    public void setForbidList(HashSet<HashPoint> recentlyDrawnPoints) {
+	this.forbidList = recentlyDrawnPoints;
+    }
+
+    public void resetForbidList() {
+	this.forbidList = new HashSet<>();
     }
 
 }

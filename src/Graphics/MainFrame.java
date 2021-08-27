@@ -32,6 +32,7 @@ import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Image;
+import java.awt.Point;
 import java.awt.Robot;
 import java.awt.SystemColor;
 import java.awt.event.ComponentAdapter;
@@ -42,9 +43,6 @@ import java.awt.event.MouseMotionAdapter;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.awt.image.BufferedImage;
-import java.util.ArrayList;
-import java.util.HashSet;
-
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -58,7 +56,6 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import Utils.JHardware;
-import util.HashPoint;
 
 /**
  * TODO: FUNCTIONALITY TO DRAW TODO: FUNCTIONALITY TO IMPORT or TYPE TODO: SOME
@@ -72,52 +69,6 @@ public class MainFrame extends JFrame implements Runnable {
      * 
      */
     private static final long serialVersionUID = 6187669053453265918L;
-
-    /**
-     * The Width of the screen
-     */
-    public static final int SCREEN_WIDTH = (int) toInt(JHardware.getScreenSize().getWidth());
-    /**
-     * The Height of the screen
-     */
-    public static final int SCREEN_HEIGHT = (int) JHardware.getScreenSize().getHeight();
-    /**
-     * The ratio of a screen that the program window will be.<br>
-     */
-    private static double W_RATIO = 0.7;
-    /**
-     * The ratio of a screen that the program window will be.<br>
-     */
-    private static double H_RATIO = 0.8;
-    /**
-     * The Width of the program window
-     */
-    public static final int WINDOW_WIDTH = (int) (SCREEN_WIDTH * W_RATIO) - 10;
-    /**
-     * The Height of the program window
-     */
-    public static final int WINDOW_HEIGHT = (int) (SCREEN_HEIGHT * H_RATIO) + 2;
-    /**
-     * The margin by how much that all the components must be separated from each
-     * other.
-     */
-    public static final int COMPONENT_MARGIN = 10;
-    /**
-     * The delay for the game mechanism
-     */
-    public static int LATENCY = 1000;
-
-    public static final int BOTTOM_PANEL_HEIGHT = 40;
-
-    private Surface surf;
-
-    private JLabel lblLatency;
-    private JSlider slider;
-    private JPanel BOTTOM_PANEL;
-    private JLabel lblMs;
-    private BiStateButton buttonPause;
-    private BiStateButton drawButton;
-    private MultiStateButton drawModeButton;
 
     public MainFrame() {
 	try {
@@ -140,22 +91,17 @@ public class MainFrame extends JFrame implements Runnable {
 	surf = new Surface(WINDOW_WIDTH, WINDOW_HEIGHT);
 
 	SpringLayout springLayout = new SpringLayout();
-	springLayout.putConstraint(SpringLayout.SOUTH, surf, 0, SpringLayout.NORTH, BOTTOM_PANEL);
-	springLayout.putConstraint(SpringLayout.NORTH, BOTTOM_PANEL, 537, SpringLayout.NORTH, getContentPane());
-	springLayout.putConstraint(SpringLayout.WEST, BOTTOM_PANEL, 0, SpringLayout.WEST, getContentPane());
-	springLayout.putConstraint(SpringLayout.EAST, BOTTOM_PANEL, 0, SpringLayout.EAST, getContentPane());
-	springLayout.putConstraint(SpringLayout.SOUTH, BOTTOM_PANEL, 577, SpringLayout.NORTH, getContentPane());
-
 	springLayout.putConstraint(SpringLayout.NORTH, surf, 0, SpringLayout.NORTH, getContentPane());
+	springLayout.putConstraint(SpringLayout.SOUTH, surf, 0, SpringLayout.NORTH, BOTTOM_PANEL);
 	springLayout.putConstraint(SpringLayout.WEST, surf, 0, SpringLayout.WEST, getContentPane());
 	springLayout.putConstraint(SpringLayout.EAST, surf, 0, SpringLayout.EAST, getContentPane());
-	getContentPane().setLayout(springLayout);
 
-	int MARGIN = 5;
-	int latencyLblW = 50;
-	int msLblW = 60;
-	int sliderW = 250;
-	int pauseSize = 25;
+	springLayout.putConstraint(SpringLayout.NORTH, BOTTOM_PANEL, -BOTTOM_PANEL_HEIGHT, SpringLayout.SOUTH,
+		getContentPane());
+	springLayout.putConstraint(SpringLayout.WEST, BOTTOM_PANEL, 0, SpringLayout.WEST, getContentPane());
+	springLayout.putConstraint(SpringLayout.EAST, BOTTOM_PANEL, 0, SpringLayout.EAST, getContentPane());
+	springLayout.putConstraint(SpringLayout.SOUTH, BOTTOM_PANEL, 0, SpringLayout.SOUTH, getContentPane());
+	getContentPane().setLayout(springLayout);
 
 	lblLatency = new JLabel("DELAY");
 	lblLatency.setHorizontalAlignment(SwingConstants.CENTER);
@@ -168,38 +114,45 @@ public class MainFrame extends JFrame implements Runnable {
 	lblMs = new JLabel("1000 ms");
 	lblMs.setHorizontalAlignment(SwingConstants.LEADING);
 	lblMs.setFont(new Font("Arial", Font.BOLD, 12));
-	buttonPause = new BiStateButton("play", "pause", pauseSize);
+	buttonPause = new BiStateButton("pause", "play", BUTTON_ICON_SIZE);
 	buttonPause.setState(true);
-	drawButton = new BiStateButton("select", "pencil", pauseSize + 8);
-	drawModeButton = new MultiStateButton(pauseSize, "white", "darkestBlue", "inverted");
-	
+	drawButton = new BiStateButton("select", "pencil", toInt(BUTTON_SIZE * 0.8));
+	drawModeButton = new MultiStateButton(BUTTON_ICON_SIZE, "white", "darkestBlue", "inverted");
 
 	SpringLayout sl_BOTTOM_PANEL = new SpringLayout();
+	sl_BOTTOM_PANEL.putConstraint(SpringLayout.WEST, lblLatency, X_MARGIN, SpringLayout.WEST, BOTTOM_PANEL);
+	sl_BOTTOM_PANEL.putConstraint(SpringLayout.EAST, lblLatency, LATENCY_LABEL_WIDTH + X_MARGIN, SpringLayout.WEST,
+		BOTTOM_PANEL);
+	sl_BOTTOM_PANEL.putConstraint(SpringLayout.NORTH, lblLatency, Y_MARGIN - 3, SpringLayout.NORTH, BOTTOM_PANEL);
+	sl_BOTTOM_PANEL.putConstraint(SpringLayout.SOUTH, lblLatency, -Y_MARGIN, SpringLayout.SOUTH, BOTTOM_PANEL);
 
-	sl_BOTTOM_PANEL.putConstraint(SpringLayout.EAST, lblLatency, latencyLblW, SpringLayout.WEST, BOTTOM_PANEL);
-	sl_BOTTOM_PANEL.putConstraint(SpringLayout.WEST, lblLatency, MARGIN * 2, SpringLayout.WEST, BOTTOM_PANEL);
-	sl_BOTTOM_PANEL.putConstraint(SpringLayout.NORTH, lblLatency, MARGIN - 2, SpringLayout.NORTH, BOTTOM_PANEL);
-	sl_BOTTOM_PANEL.putConstraint(SpringLayout.SOUTH, lblLatency, -MARGIN, SpringLayout.SOUTH, BOTTOM_PANEL);
-
-	sl_BOTTOM_PANEL.putConstraint(SpringLayout.EAST, slider, -913 + sliderW, SpringLayout.EAST, BOTTOM_PANEL);
-	sl_BOTTOM_PANEL.putConstraint(SpringLayout.WEST, slider, MARGIN, SpringLayout.EAST, lblLatency);
-	sl_BOTTOM_PANEL.putConstraint(SpringLayout.NORTH, slider, MARGIN, SpringLayout.NORTH, BOTTOM_PANEL);
+	sl_BOTTOM_PANEL.putConstraint(SpringLayout.WEST, slider, X_MARGIN, SpringLayout.EAST, lblLatency);
+	sl_BOTTOM_PANEL.putConstraint(SpringLayout.EAST, slider, SLIDER_WIDTH + X_MARGIN, SpringLayout.WEST,
+		lblLatency);
+	sl_BOTTOM_PANEL.putConstraint(SpringLayout.NORTH, slider, Y_MARGIN + 2, SpringLayout.NORTH, BOTTOM_PANEL);
 	sl_BOTTOM_PANEL.putConstraint(SpringLayout.SOUTH, slider, 0, SpringLayout.SOUTH, BOTTOM_PANEL);
 
-	sl_BOTTOM_PANEL.putConstraint(SpringLayout.EAST, lblMs, -663 + msLblW, SpringLayout.EAST, BOTTOM_PANEL);
-	sl_BOTTOM_PANEL.putConstraint(SpringLayout.WEST, lblMs, MARGIN, SpringLayout.EAST, slider);
-	sl_BOTTOM_PANEL.putConstraint(SpringLayout.NORTH, lblMs, MARGIN - 2, SpringLayout.NORTH, BOTTOM_PANEL);
-	sl_BOTTOM_PANEL.putConstraint(SpringLayout.SOUTH, lblMs, -MARGIN, SpringLayout.SOUTH, BOTTOM_PANEL);
+	sl_BOTTOM_PANEL.putConstraint(SpringLayout.WEST, lblMs, X_MARGIN, SpringLayout.EAST, slider);
+	sl_BOTTOM_PANEL.putConstraint(SpringLayout.EAST, lblMs, MS_LABEL_WIDTH + X_MARGIN, SpringLayout.EAST, slider);
+	sl_BOTTOM_PANEL.putConstraint(SpringLayout.NORTH, lblMs, Y_MARGIN - 3, SpringLayout.NORTH, BOTTOM_PANEL);
+	sl_BOTTOM_PANEL.putConstraint(SpringLayout.SOUTH, lblMs, -Y_MARGIN, SpringLayout.SOUTH, BOTTOM_PANEL);
 
-	sl_BOTTOM_PANEL.putConstraint(SpringLayout.NORTH, buttonPause, 0, SpringLayout.NORTH, BOTTOM_PANEL);
-	sl_BOTTOM_PANEL.putConstraint(SpringLayout.SOUTH, buttonPause, 0, SpringLayout.SOUTH, slider);
-	sl_BOTTOM_PANEL.putConstraint(SpringLayout.WEST, buttonPause, 6, SpringLayout.EAST, lblMs);
-	sl_BOTTOM_PANEL.putConstraint(SpringLayout.EAST, buttonPause, -556, SpringLayout.EAST, BOTTOM_PANEL);
+	sl_BOTTOM_PANEL.putConstraint(SpringLayout.WEST, buttonPause, X_MARGIN, SpringLayout.EAST, lblMs);
+	sl_BOTTOM_PANEL.putConstraint(SpringLayout.EAST, buttonPause, BUTTON_SIZE + X_MARGIN, SpringLayout.EAST, lblMs);
+	sl_BOTTOM_PANEL.putConstraint(SpringLayout.NORTH, buttonPause, Y_MARGIN, SpringLayout.NORTH, BOTTOM_PANEL);
+	sl_BOTTOM_PANEL.putConstraint(SpringLayout.SOUTH, buttonPause, -Y_MARGIN, SpringLayout.SOUTH, BOTTOM_PANEL);
 
-	sl_BOTTOM_PANEL.putConstraint(SpringLayout.NORTH, drawButton, 0, SpringLayout.NORTH, BOTTOM_PANEL);
-	sl_BOTTOM_PANEL.putConstraint(SpringLayout.SOUTH, drawButton, 0, SpringLayout.SOUTH, slider);
-	sl_BOTTOM_PANEL.putConstraint(SpringLayout.WEST, drawButton, 6, SpringLayout.EAST, buttonPause);
-	sl_BOTTOM_PANEL.putConstraint(SpringLayout.EAST, drawButton, -511, SpringLayout.EAST, BOTTOM_PANEL);
+	sl_BOTTOM_PANEL.putConstraint(SpringLayout.WEST, drawButton, X_MARGIN, SpringLayout.EAST, buttonPause);
+	sl_BOTTOM_PANEL.putConstraint(SpringLayout.EAST, drawButton, BUTTON_SIZE + X_MARGIN, SpringLayout.EAST,
+		buttonPause);
+	sl_BOTTOM_PANEL.putConstraint(SpringLayout.NORTH, drawButton, Y_MARGIN, SpringLayout.NORTH, BOTTOM_PANEL);
+	sl_BOTTOM_PANEL.putConstraint(SpringLayout.SOUTH, drawButton, -Y_MARGIN, SpringLayout.SOUTH, BOTTOM_PANEL);
+
+	sl_BOTTOM_PANEL.putConstraint(SpringLayout.WEST, drawModeButton, X_MARGIN, SpringLayout.EAST, drawButton);
+	sl_BOTTOM_PANEL.putConstraint(SpringLayout.EAST, drawModeButton, BUTTON_SIZE + X_MARGIN, SpringLayout.EAST,
+		drawButton);
+	sl_BOTTOM_PANEL.putConstraint(SpringLayout.NORTH, drawModeButton, Y_MARGIN, SpringLayout.NORTH, BOTTOM_PANEL);
+	sl_BOTTOM_PANEL.putConstraint(SpringLayout.SOUTH, drawModeButton, -Y_MARGIN, SpringLayout.SOUTH, BOTTOM_PANEL);
 
 	BOTTOM_PANEL.setLayout(sl_BOTTOM_PANEL);
 	BOTTOM_PANEL.add(lblLatency);
@@ -220,32 +173,30 @@ public class MainFrame extends JFrame implements Runnable {
 
 	Robot r = new Robot();
 	r.mouseMove(initX, initY);
-	boolean hold = true;
-	HashSet<HashPoint> recentlyDrawnPoints = new HashSet<>();
+
 	surf.addMouseMotionListener(new MouseMotionAdapter() {
 
-	    HashPoint prevCoords = new HashPoint(initX, initY);
+	    Point prevCoords = Surface.convert2Point(initX, initY);
 
 	    @Override
 	    public void mouseMoved(MouseEvent e) {
-		prevCoords = new HashPoint(e.getX(), e.getY());
+		prevCoords = Surface.convert2Point(e.getX(), e.getY());
 	    }
 
 	    @Override
 	    public void mouseDragged(MouseEvent e) {
+		/* DRAWING... */
 		if (drawButton.getState()) {
 		    buttonPause.setState(true);
-		    surf.clickCell(e.getX(), e.getY(), recentlyDrawnPoints);
+		    surf.clickCell(Surface.convert2Point(e.getX(), e.getY()), drawModeButton.getIndex());
+		    surf.repaint();
 		    return;
 		}
 
-		HashPoint currCoords = new HashPoint(e.getX(), e.getY());
-
-		if (hold) {
-		    surf.addOffset(currCoords.x - prevCoords.x, currCoords.y - prevCoords.y);
-		    surf.repaint();
-		}
-		prevCoords = currCoords;
+		/* DRAGGING... */
+		surf.addOffset(e.getX() - prevCoords.x, e.getY() - prevCoords.y);
+		surf.repaint();
+		prevCoords = Surface.convert2Point(e.getX(), e.getY());
 
 	    }
 	});
@@ -259,19 +210,22 @@ public class MainFrame extends JFrame implements Runnable {
 	    public void mouseWheelMoved(MouseWheelEvent e) {
 
 		int notches = e.getWheelRotation();
-		if (notches < 0) {// UP
-		    surf.setGridSize(surf.getGridSize() + 1);
-		} else {
-		    surf.setGridSize(surf.getGridSize() - 1);
-		}
+
+		int zoom = Math.abs(notches) / notches * ((ZOOM_IN_WHEN_SCROLL_UP) ? -1 : 1);
+		surf.setGridSize(surf.getGridSize() + zoom);
 		surf.repaint();
 	    }
 	});
 	surf.addMouseListener(new MouseAdapter() {
 	    @Override
+	    public void mouseReleased(MouseEvent e) {
+		surf.resetForbidList();
+	    }
+
+	    @Override
 	    public void mouseClicked(MouseEvent e) {
-		if (drawButton.getState())
-		    surf.clickCell(e.getX(), e.getY());
+		// if (drawButton.getState())
+		// surf.clickCell(e.getX(), e.getY());
 	    }
 	});
 	slider.addChangeListener(new ChangeListener() {
@@ -323,10 +277,77 @@ public class MainFrame extends JFrame implements Runnable {
 		continue;
 
 	    surf.step();
+	    surf.repaint();
 	}
     }
 
     void println(String str) {
 	System.out.println(str);
     }
+
+    /**************************************************************************************
+     * VARIABLE DECLARATION
+     **************************************************************************************/
+    /****************************
+     * STATIC SETTINGS VARIABLES
+     ****************************/
+
+    /**
+     * The ratio of a screen that the program window will be.<br>
+     */
+    private static double W_RATIO = 0.7;
+    /**
+     * The ratio of a screen that the program window will be.<br>
+     */
+    private static double H_RATIO = 0.8;
+    public static final boolean ZOOM_IN_WHEN_SCROLL_UP = true;
+    public static final int BOTTOM_PANEL_HEIGHT = 50;
+    public static final int X_MARGIN = 5;
+    public static final int Y_MARGIN = 5;
+    public static final int LATENCY_LABEL_WIDTH = 50;
+    public static final int MS_LABEL_WIDTH = 60;
+    public static final int SLIDER_WIDTH = 250;
+
+    /****************************
+     * FINAL VARIABLES
+     ****************************/
+
+    /**
+     * The Width of the screen
+     */
+    public static final int SCREEN_WIDTH = (int) toInt(JHardware.getScreenSize().getWidth());
+    /**
+     * The Height of the screen
+     */
+    public static final int SCREEN_HEIGHT = (int) JHardware.getScreenSize().getHeight();
+
+    /**
+     * The Width of the program window
+     */
+    public static final int WINDOW_WIDTH = (int) (SCREEN_WIDTH * W_RATIO) - 10;
+    /**
+     * The Height of the program window
+     */
+    public static final int WINDOW_HEIGHT = (int) (SCREEN_HEIGHT * H_RATIO) + 2;
+
+    /**
+     * The delay for the game mechanism
+     */
+    public static int LATENCY = 1000;
+
+    public static final int BUTTON_SIZE = BOTTOM_PANEL_HEIGHT - Y_MARGIN * 2;
+
+    public static final int BUTTON_ICON_SIZE = BUTTON_SIZE - X_MARGIN * 3;
+
+    /****************************
+     * AWT & SWING COMPONENTS
+     ****************************/
+    private Surface surf;
+    private JLabel lblLatency;
+    private JSlider slider;
+    private JPanel BOTTOM_PANEL;
+    private JLabel lblMs;
+    private BiStateButton buttonPause;
+    private BiStateButton drawButton;
+    private MultiStateButton drawModeButton;
 }

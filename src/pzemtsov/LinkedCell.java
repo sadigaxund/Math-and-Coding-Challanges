@@ -41,4 +41,13 @@ public final class LinkedCell {
     public void reset() {
 	live = false;
     }
+
+    @Override
+    public boolean equals(Object cell) {
+	return ((LinkedCell) cell).position == position;
+    }
+
+    public boolean equals(long position) {
+	return this.position == position;
+    }
 }

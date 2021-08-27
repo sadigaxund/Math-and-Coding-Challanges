@@ -23,37 +23,27 @@
  *
  * 
  **************************************************************************/
-package util;
+package Graphics;
 
-import java.awt.Point;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 
-public class HashPoint extends Point {
-  
+import javax.swing.JPanel;
 
-    public HashPoint(int x, int y) {
-	this.x = x;
-	this.y = y;
+public abstract class SuperSurface extends JPanel implements ComponentListener {
+
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 133870799168380262L;
+
+    public SuperSurface() {
+
     }
 
     @Override
-    public final boolean equals(Object obj) {
-	HashPoint p = (HashPoint) obj;
-	return x == p.x && y == p.y;
-    }
+    public void componentResized(ComponentEvent e) {
+	// TODO Auto-generated method stub
 
-    @Override
-    public final int hashCode() {
-	return x * 3 + y * 5;
-    }
-
-    @Override
-    public String toString() {
-	return "(" + x + "," + y + ")";
-    }
-
-    public HashPoint[] neighbours() {
-	return new HashPoint[] { new HashPoint(x - 1, y - 1), new HashPoint(x - 1, y), new HashPoint(x - 1, y + 1),
-		new HashPoint(x, y - 1), new HashPoint(x, y + 1), new HashPoint(x + 1, y - 1), new HashPoint(x + 1, y),
-		new HashPoint(x + 1, y + 1) };
     }
 }
