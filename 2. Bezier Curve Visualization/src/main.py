@@ -23,8 +23,9 @@ SOFTWARE.
 '''
 
 import graphics as G2D
-from numpy import arange
+import pygame_gui
 
+STRING_ART = False
 VERTICIES = 25
 p0 = (0, G2D.WINDOW_SIZE[1] / 2)
 p1 = (G2D.WINDOW_SIZE[0] / 4, G2D.WINDOW_SIZE[1])
@@ -33,8 +34,35 @@ p3 = (G2D.WINDOW_SIZE[0], G2D.WINDOW_SIZE[1] / 2)
 
 G2D.init("Bezier Visualization")
 
+def stringify(v1, v2, t):
+    global STRING_ART
+    if STRING_ART:
+        G2D.line((v1[0], v1[1]), (v2[0], v2[1]), G2D.colorOnRainbow(t))
+
+def bezier(pts, t):
+    order = len(pts) - 1
+    if order == 2:
+        return quadratic(pts[0], pts[1], pts[2], t)
+    v1 = bezier(pts[:-1], t)
+    v2 = bezier(pts[1:], t)
+    stringify(v1, v2, t)
+    return G2D.lerp2D(v1, v2, t)
+    # return (x, y)
+
+def cubic(p0, p1, p2, p3, t):
+    v1 = quadratic(p0, p1, p2, t)
+    v2 = quadratic(p1, p2, p3, t)
+    stringify(v1, v2, t)
+    return G2D.lerp2D(v1, v2, t)
+
+def quadratic(p0, p1, p2, t):
+    v1 = G2D.lerp2D(p0, p1, t)
+    v2 = G2D.lerp2D(p1, p2, t)
+    stringify(v1, v2, t)
+    return G2D.lerp2D(v1, v2, t)
 
 def draw(this):
+    global STRING_ART
     G2D.fillBackground(G2D.BLACK)
     G2D.strokeWeight(1)
     G2D.penColor([0,255,0])
@@ -43,13 +71,12 @@ def draw(this):
     # p1 = G2D.getMousePos()
 
     G2D.penColor(G2D.GREEN)
-    # G2D.enableRainbowString()
+    # STRING_ART = True
     pts = [(0, 600), (800, 0), (0, 0), (800, 600)]
-    for t in arange(0.0, 1.0001, 1.0 / VERTICIES):
-        G2D.vertex(G2D.bezier(pts, t))
-        
-
-    G2D.vertex((-1, -1))
+    for step in range(0, VERTICIES + 1):
+        t = step / VERTICIES
+        G2D.vertex(bezier(pts, t))
+    G2D.breakVertex()
 
 
 def update(this):
