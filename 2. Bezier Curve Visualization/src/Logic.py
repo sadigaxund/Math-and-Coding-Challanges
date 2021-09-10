@@ -29,3 +29,5 @@ class LogicAdapter():
         print("Default Logic Adapter Behaviour: draw()")
     def update(self):
         print("Default Logic Adapter Behaviour: update()")
+    def handleEvent(self, event):
+        print("Default Logic Adapter Behaviour: handleEvent()")
