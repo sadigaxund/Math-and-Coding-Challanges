@@ -22,8 +22,12 @@ class Pen:
     def lerp2D(self, p0, p1, t):
         return (self.lerp(p0[0], p1[0], t), self.lerp(p0[1], p1[1], t))
     ###### <----------- GRAPHICS -----------> ######
-    def drawRect(self, rect):
-        return self.PYGAME_INSTANCE_.draw.rect(self.CANVAS, self.PEN_COLOR, rect, self.STROKE_WEIGHT)
+    def drawRect(self, rect, stroke = -1, color = (-1, -1, -1)):
+        if stroke == -1:
+            stroke = self.STROKE_WEIGHT
+        if color == (-1, -1, -1):
+            color = self.PEN_COLOR
+        return self.PYGAME_INSTANCE_.draw.rect(self.CANVAS, color, rect, stroke)
 
     def line(self, p1, p2, color = (-1, -1, -1)):
         if color == (-1, -1, -1):
@@ -53,7 +57,7 @@ class Pen:
         color = self.PYGAME_INSTANCE_.Color(int(color[0] % 256), int(color[1] % 256), int(color[2] % 256)) # preventing invalid color argument
         self.PEN_COLOR = color
 
-    def colorOnRainbow(hue):
+    def colorOnRainbow(self, hue):
         (r, g, b) = colorsys.hsv_to_rgb(hue, 1.0, 1.0)
         return [int(255 * r), int(255 * g), int(255 * b)]
     ###### <----------- GRAPHICS -----------> ######

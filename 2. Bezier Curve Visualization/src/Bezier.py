@@ -22,13 +22,15 @@ class Geometry:
     def quadratic(self, p0, p1, p2, t):
         v1 = self.__G2D.PEN.lerp2D(p0, p1, t)
         v2 = self.__G2D.PEN.lerp2D(p1, p2, t)
-        print(t)
         self.stringify(v1, v2, t)
         return self.__G2D.PEN.lerp2D(v1, v2, t)
 
     def stringify(self, v1, v2, t):
+        w = self.__G2D.PEN.STROKE_WEIGHT
+        self.__G2D.PEN.STROKE_WEIGHT = int(self.__G2D.PEN.STROKE_WEIGHT * 0.7)
         if self.__STRING_ART:
             self.__G2D.PEN.line(v1, v2, self.__G2D.PEN.colorOnRainbow(t))
+        self.__G2D.PEN.STROKE_WEIGHT = w
     
     def setStringArt(self, flag):
         self.__STRING_ART = flag
