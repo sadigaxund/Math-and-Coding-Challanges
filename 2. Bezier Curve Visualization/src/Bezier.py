@@ -1,7 +1,7 @@
 
 class Geometry:
     def __init__(self, G2D) -> None:
-        self.__STRING_ART = False
+        self.STRING_ART = False
         self.__G2D = G2D
 
     def bezier(self, pts, t):
@@ -28,9 +28,6 @@ class Geometry:
     def stringify(self, v1, v2, t):
         w = self.__G2D.PEN.STROKE_WEIGHT
         self.__G2D.PEN.STROKE_WEIGHT = int(self.__G2D.PEN.STROKE_WEIGHT * 0.7)
-        if self.__STRING_ART:
+        if self.STRING_ART:
             self.__G2D.PEN.line(v1, v2, self.__G2D.PEN.colorOnRainbow(t))
         self.__G2D.PEN.STROKE_WEIGHT = w
-    
-    def setStringArt(self, flag):
-        self.__STRING_ART = flag

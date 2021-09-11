@@ -7,7 +7,7 @@ class Pen:
     __RED = (255, 0, 0)
     
     PEN_COLOR = __WHITE
-    STROKE_WEIGHT = 1
+    STROKE_WEIGHT = 3
     __LAST_VERTEX = (-1, -1)
     
     def __init__(self, canvas, pyGame):
