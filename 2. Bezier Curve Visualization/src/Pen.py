@@ -40,8 +40,8 @@ class Pen:
     def fillBackground(self, color):
         self.CANVAS.fill(color)
 
-    def addVertex(self, p):
-        if self.__LAST_VERTEX == (-1, -1) or p == (-1, -1):
+    def addVertex(self, p = None):
+        if self.__LAST_VERTEX == None or p == None:
             self.__LAST_VERTEX = p
             return
         self.line(self.__LAST_VERTEX, p)

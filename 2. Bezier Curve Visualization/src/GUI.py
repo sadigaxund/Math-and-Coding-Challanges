@@ -68,7 +68,7 @@ def draw(this):
     for step in range(0, VERTICES + 1):
         t = step / VERTICES
         G2D.PEN.addVertex(bezierDrawer.bezier(pts, t))
-    G2D.PEN.breakVertex()
+    G2D.PEN.addVertex()
 
 
 def handleEvent(this, event):
