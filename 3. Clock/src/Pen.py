@@ -8,58 +8,55 @@ class Pen:
     
     PEN_COLOR = __WHITE
     STROKE_WEIGHT = 3
-    __LAST_VERTEX = (-1, -1)
+    __LAST_VERTEX = None
     
     def __init__(self, canvas, pyGame):
         self.PYGAME_INSTANCE_ = pyGame
         self.CANVAS = canvas
         # self.rect = self.PYGAME_INSTANCE_.draw.rect
         
-    # function for linear interpolation for a coordinate
-    def lerp(self, c0, c1, t):
-        return c0 + (c1 - c0) * t
-    # function for linear interpolation for a vector
-    def lerp2D(self, p0, p1, t):
-        return (self.lerp(p0[0], p1[0], t), self.lerp(p0[1], p1[1], t))
+   
     ###### <----------- GRAPHICS -----------> ######
-    def drawRect(self, rect, stroke = -1, color = (-1, -1, -1)):
-        if stroke == -1:
-            stroke = self.STROKE_WEIGHT
-        if color == (-1, -1, -1):
+    def drawRect(self, rect, color = None, stroke = None):
+        if color == None:
             color = self.PEN_COLOR
+        if stroke == None:
+            stroke = self.STROKE_WEIGHT
         return self.PYGAME_INSTANCE_.draw.rect(self.CANVAS, color, rect, stroke)
 
-    def line(self, p1, p2, color = (-1, -1, -1)):
-        if color == (-1, -1, -1):
+    def line(self, p1, p2, color = None, stroke = None):
+        if color == None:
             color = self.PEN_COLOR
-        return self.PYGAME_INSTANCE_.draw.line(self.CANVAS, color, p1, p2, self.STROKE_WEIGHT)
-
-    def point(self, p, color = (-1, -1, -1), stroke = -1):
-        if stroke == -1:
+        if stroke == None:
             stroke = self.STROKE_WEIGHT
-        if color == (-1, -1, -1):
+        return self.PYGAME_INSTANCE_.draw.line(self.CANVAS, color, p1, p2, stroke)
+
+    def point(self, p, color = None, stroke = None):
+        if color == None:
             color = self.PEN_COLOR
+        if stroke == None:
+            stroke = self.STROKE_WEIGHT
         return self.PYGAME_INSTANCE_.draw.circle(self.CANVAS, color, p, stroke, 0)
 
-    def circle(self, center, radius = 0, color = (-1, -1, -1), stroke = -1):
-        if stroke == -1:
-            stroke = self.STROKE_WEIGHT
-        if color == (-1, -1, -1):
+    def circle(self, center, radius = 0, color = None, stroke = None):
+        if color == None:
             color = self.PEN_COLOR
+        if stroke == None:
+            stroke = self.STROKE_WEIGHT
         return self.PYGAME_INSTANCE_.draw.circle(self.CANVAS, color, center, radius, stroke)
 
     def fillBackground(self, color):
         self.CANVAS.fill(color)
 
-    def addVertex(self, p):
-        if self.__LAST_VERTEX == (-1, -1) or p == (-1, -1):
+    def addVertex(self, p = None):
+        if self.__LAST_VERTEX == None or p == None:
             self.__LAST_VERTEX = p
             return
         self.line(self.__LAST_VERTEX, p)
         self.__LAST_VERTEX = p
 
     def breakVertex(self):
-        self.__LAST_VERTEX = (-1, -1)
+        self.__LAST_VERTEX = None
                             ## SETTERS ##
     def strokeWeight(self, weight):
         self.STROKE_WEIGHT = weight

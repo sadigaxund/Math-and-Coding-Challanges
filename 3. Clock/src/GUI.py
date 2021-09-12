@@ -1,197 +1,202 @@
+from pygame.mixer import stop
 from graphics import Renderer
-import pygame_gui
 from datetime import datetime
+from tzlocal import get_localzone
+import pygame_gui 
 import pytz
-from tzlocal import get_localzone 
 import math
+import time
+import configparser
+config = configparser.ConfigParser()
+config.read('settings.ini')
+settings = config['COMPONENTS']
+colors = config['COLORS']
+fetchInt = lambda key : int(settings[key])
 
-
-# current_time = datetime_NY.strftime("%H:%M:%S")
-
-# print(pytz.common_timezones)
-CURRENT_TIMEZONE = str(get_localzone())
-G2D = Renderer((800, 600), 'Clock') 
+G2D = Renderer((fetchInt('WINDOW_WIDTH'), fetchInt('WINDOW_HEIGHT')), 'Clock') 
 manager = pygame_gui.UIManager(G2D.WINDOW_SIZE)
-# G2D.WINDOW.fill(G2D.PYGAME_INSTANCE_.Color('#001100'))
-MARGIN = 5
-BOTTOM_MENU_HEIGHT = 40
-DROPDOWN_MENU_WIDTH = 300
-CANVAS_BORDER = G2D.Rect(0, BOTTOM_MENU_HEIGHT, G2D.WINDOW_SIZE[0], G2D.WINDOW_SIZE[1])
-BOTTOM_MENU_BORDERS = G2D.Rect(0, 0, G2D.WINDOW_SIZE[0] - DROPDOWN_MENU_WIDTH - MARGIN * 2, BOTTOM_MENU_HEIGHT)
+CURRENT_TIMEZONE = str(get_localzone())
+
+MARGIN = fetchInt('MARGIN')
+COMPONENT_HEIGHT = fetchInt('COMPONENT_HEIGHT')
+PANEL_WIDTH = fetchInt('PANEL_WIDTH')
+DIGIT_LABEL_WIDTH = fetchInt('DIGIT_LABEL_WIDTH')
+TIMEZONE_LABEL_WIDTH = fetchInt('TIMEZONE_LABEL_WIDTH')
+CLOCK_RADIUS = fetchInt('CLOCK_RADIUS')
+
+LABEL_HEIGHT = COMPONENT_HEIGHT - MARGIN * 2 
+BUTTON_WIDTH = PANEL_WIDTH / 2 - MARGIN * 2
 
 
-
-SLIDER_WIDTH = 200
-LABEL_WIDTH = 30
-LABEL_HEIGHT = BOTTOM_MENU_HEIGHT - MARGIN * 2 
-LABEL_Y = (BOTTOM_MENU_HEIGHT - LABEL_HEIGHT) / 2 - 2
-SLIDER_Y = LABEL_Y - 1
-TIMEZONE_LABEL_WIDTH = LABEL_WIDTH * 2.2
+CANVAS_BORDER = G2D.Rect(PANEL_WIDTH, 0, G2D.WINDOW_SIZE[0] - PANEL_WIDTH, G2D.WINDOW_SIZE[1])
+BOTTOM_MENU_BORDERS = G2D.Rect(0, 0, PANEL_WIDTH, G2D.WINDOW_SIZE[1])
 bottom_panel = pygame_gui.elements.UIPanel(BOTTOM_MENU_BORDERS, 4, manager)
-
-INFO_LABEL_BORDER =  G2D.Rect(MARGIN, LABEL_Y, BOTTOM_MENU_BORDERS.width - TIMEZONE_LABEL_WIDTH - MARGIN * 3, LABEL_HEIGHT)
-timezoneLabel = pygame_gui.elements.UILabel(INFO_LABEL_BORDER, 
+TEMPO =  G2D.Rect(-MARGIN, MARGIN, PANEL_WIDTH - TIMEZONE_LABEL_WIDTH - MARGIN, LABEL_HEIGHT)
+timezoneLabel = pygame_gui.elements.UILabel(TEMPO, 
                                             str(CURRENT_TIMEZONE), 
                                             manager, 
                                             bottom_panel)
-INFO_LABEL_BORDER = G2D.Rect(BOTTOM_MENU_BORDERS.right - TIMEZONE_LABEL_WIDTH - MARGIN * 3, 
-                            LABEL_Y, 
-                            LABEL_WIDTH * 2.2, 
-                            LABEL_HEIGHT)
-vertexLabel = pygame_gui.elements.UILabel(INFO_LABEL_BORDER, 
+TEMPO = G2D.Rect(BOTTOM_MENU_BORDERS.right - TIMEZONE_LABEL_WIDTH - MARGIN * 4, 
+                                        MARGIN, 
+                                        TIMEZONE_LABEL_WIDTH - MARGIN, 
+                                        LABEL_HEIGHT)
+vertexLabel = pygame_gui.elements.UILabel(TEMPO, 
                                         "00:00:00", 
                                         manager, 
                                         bottom_panel)
-
-pygame_gui.elements.UIDropDownMenu(pytz.common_timezones,
+TEMPO = G2D.Rect(MARGIN, TEMPO.bottom + MARGIN, BOTTOM_MENU_BORDERS.width - MARGIN * 3 , COMPONENT_HEIGHT)
+dropDownMenu = pygame_gui.elements.UIDropDownMenu(pytz.common_timezones,
                                     CURRENT_TIMEZONE,
-                                    G2D.Rect(G2D.WINDOW_SIZE[0] - DROPDOWN_MENU_WIDTH - MARGIN , 0, DROPDOWN_MENU_WIDTH, BOTTOM_MENU_HEIGHT),
-                                    manager = manager)
+                                    TEMPO,
+                                    manager = manager,
+                                    container = bottom_panel)
 
-MID_POINT = (G2D.WINDOW_SIZE[0] / 2, BOTTOM_MENU_HEIGHT + (G2D.WINDOW_SIZE[1] - BOTTOM_MENU_HEIGHT) / 2)
-CLOCK_RADIUS = 250
+snap_button = pygame_gui.elements.UIButton(G2D.Rect(MARGIN , COMPONENT_HEIGHT * 2 + MARGIN, BUTTON_WIDTH, COMPONENT_HEIGHT),
+                                      'Snapping',
+                                      manager,
+                                      object_id='#snapping_button',
+                                      container = bottom_panel)
+rgb_button = pygame_gui.elements.UIButton(G2D.Rect(TEMPO.right - BUTTON_WIDTH, COMPONENT_HEIGHT * 2 + MARGIN, BUTTON_WIDTH, COMPONENT_HEIGHT),
+                                      'RGB',
+                                      manager,
+                                      object_id='#snapping_button',
+                                      container = bottom_panel) 
+MID_POINT = (0, 0)
+def updatePivotPoint():
+    global MID_POINT
+    MID_POINT = (CANVAS_BORDER.left + CANVAS_BORDER.width / 2, CANVAS_BORDER.top + CANVAS_BORDER.height / 2)
 
-x1 = MID_POINT[0] + CLOCK_RADIUS * math.cos(math.pi * 2)
-y1 = MID_POINT[1] + CLOCK_RADIUS * math.sin(math.pi * 2)
-DIGIT_BORDER = G2D.Rect(x1 - LABEL_WIDTH * 2, 
-                        y1 - LABEL_WIDTH/2, 
-                        LABEL_WIDTH, 
-                        LABEL_WIDTH)
-pygame_gui.elements.UILabel(DIGIT_BORDER, 
-                            "3", 
-                            manager)
+updatePivotPoint()
 
-x1 = MID_POINT[0] + CLOCK_RADIUS * math.cos(math.pi / 2)
-y1 = MID_POINT[1] + CLOCK_RADIUS * math.sin(math.pi / 2)
-DIGIT_BORDER = G2D.Rect(x1 - LABEL_WIDTH / 2, 
-                        y1 - LABEL_WIDTH * 2, 
-                        LABEL_WIDTH, 
-                        LABEL_WIDTH)
-pygame_gui.elements.UILabel(DIGIT_BORDER, 
-                            "6", 
-                            manager)
+'''
+Dictionary contains 2 values:
+    1. angle from the origin (mirrored by x-axis)
+    2. small offset for design purposes (you may tweak a bit)
+'''
+label_map = {
+        "3"     : [ 0,           (-DIGIT_LABEL_WIDTH * 2  , -DIGIT_LABEL_WIDTH / 2) ],
+        "6"     : [ math.pi / 2, (-DIGIT_LABEL_WIDTH / 2  , -DIGIT_LABEL_WIDTH * 2) ],
+        "9"     : [ math.pi,     (+DIGIT_LABEL_WIDTH      , -DIGIT_LABEL_WIDTH / 2) ],
+        "12"    : [-math.pi/2,   (-DIGIT_LABEL_WIDTH / 2  , +DIGIT_LABEL_WIDTH) ],
+        }
+'''
+Method for updating digit labels' positions when resized
+'''
+def updateLabel(origin, id):
+    value  = label_map[id]
+    angle  = value[0]
+    offset = value[1]
+    x = origin[0] + CLOCK_RADIUS * math.cos(angle)
+    y = origin[1] + CLOCK_RADIUS * math.sin(angle)
+    BORDER = G2D.Rect(x + offset[0], y + offset[1], DIGIT_LABEL_WIDTH, DIGIT_LABEL_WIDTH)
+    return pygame_gui.elements.UILabel(BORDER, id, manager)
 
-x1 = MID_POINT[0] + CLOCK_RADIUS * math.cos(math.pi )
-y1 = MID_POINT[1] + CLOCK_RADIUS * math.sin(math.pi )
-DIGIT_BORDER = G2D.Rect(x1 + LABEL_WIDTH , y1 - LABEL_WIDTH/2, LABEL_WIDTH, LABEL_WIDTH)
-pygame_gui.elements.UILabel(DIGIT_BORDER, 
-                            "9", 
-                            manager)
+label3 = updateLabel(MID_POINT, "3")
+label6 = updateLabel(MID_POINT, "6")  
+label9 = updateLabel(MID_POINT, "9")
+label12 = updateLabel(MID_POINT, "12")
 
-x1 = MID_POINT[0] + CLOCK_RADIUS * math.cos(math.pi * 3/ 2)
-y1 = MID_POINT[1] + CLOCK_RADIUS * math.sin(math.pi * 3/ 2)
-DIGIT_BORDER = G2D.Rect(x1 - LABEL_WIDTH / 2, y1 + LABEL_WIDTH, LABEL_WIDTH, LABEL_WIDTH)
-pygame_gui.elements.UILabel(DIGIT_BORDER, 
-                            "12", 
-                            manager)
-
-
-# label3.
-# INFO_LABEL_BORDER =  G2D.Rect(SLIDER_LABEL_BORDER.right + MARGIN, LABEL_Y, INFO_LABEL_BORDER.width * 0.6, INFO_LABEL_BORDER.height)
-# SLIDER_BORDER = G2D.Rect(INFO_LABEL_BORDER.right + MARGIN, SLIDER_Y, SLIDER_WIDTH * 0.6, BOTTOM_MENU_HEIGHT - MARGIN * 2)
-# SLIDER_LABEL_BORDER = G2D.Rect(SLIDER_BORDER.right + MARGIN, LABEL_Y, LABEL_WIDTH, LABEL_HEIGHT)
-# strokeLabel = pygame_gui.elements.UILabel(INFO_LABEL_BORDER, "Size:", manager, bottom_panel)
-# strokeSlider = pygame_gui.elements.UIHorizontalSlider(SLIDER_BORDER, 3.0, (0.0, 30.0), manager, bottom_panel)
-# stroke_slider_label = pygame_gui.elements.UILabel(SLIDER_LABEL_BORDER, str(int(strokeSlider.get_current_value())), manager, bottom_panel)
-
-# button_width = 100
-# button_height = BOTTOM_MENU_HEIGHT * 0.8
-# BUTTON_BORDER = G2D.Rect(SLIDER_LABEL_BORDER.right + MARGIN, (BOTTOM_MENU_HEIGHT - button_height)/2 - 3, button_width, button_height)
-
-
-# stringBtn = pygame_gui.elements.UIButton(BUTTON_BORDER, 'String Art', manager, bottom_panel,'#scaling_button')
-
-# for variable in (INFO_LABEL_BORDER, SLIDER_BORDER, SLIDER_LABEL_BORDER, BUTTON_BORDER, CANVAS_BORDER, BOTTOM_MENU_BORDERS):
-#     del variable
+'''
+Function that maps a value to anther provided an initial and a desired range
+'''
 
 
-
-
-
+RAINBOW_MODE = False    # if True: colors are of rainbow pattern, else: normal color
+SNAP_MODE = True        # if True: clock's hands are snapping to the next track, else: smooth transition
+'''
+Note: Since pygame draws as user calls the function, the order in which clock is drawn is important.  
+'''
 def draw(this):
     # Draw Canvas 
-    G2D.PEN.fillBackground(G2D.PEN.WHITE)
-    MID_POINT = (G2D.WINDOW_SIZE[0] / 2, BOTTOM_MENU_HEIGHT + (G2D.WINDOW_SIZE[1] - BOTTOM_MENU_HEIGHT) / 2)
-    
-    G2D.PEN.circle(MID_POINT, CLOCK_RADIUS, (144, 168, 238), 0)
-    for i in range(0, 10, 3):
-        track_len = 30
-        track_angle = (i / 3 * 90) * math.pi / 180
-        x0 = MID_POINT[0] + (CLOCK_RADIUS - track_len) * math.cos(track_angle)
-        y0 = MID_POINT[1] + (CLOCK_RADIUS - track_len) * math.sin(track_angle)
-        x1 = MID_POINT[0] + CLOCK_RADIUS * math.cos(track_angle)
-        y1 = MID_POINT[1] + CLOCK_RADIUS * math.sin(track_angle)
-        G2D.PEN.strokeWeight(6)
-        G2D.PEN.line((x0, y0), (x1, y1), G2D.PEN.WHITE)
-        
-    for i in range(0, 61):
-        track_len = 15
-        track_angle = (90 - i * 6) * math.pi / 180
-        x0 = MID_POINT[0] + (CLOCK_RADIUS - track_len) * math.cos(track_angle)
-        y0 = MID_POINT[1] + (CLOCK_RADIUS - track_len) * math.sin(track_angle)
-        x1 = MID_POINT[0] + CLOCK_RADIUS * math.cos(track_angle)
-        y1 = MID_POINT[1] + CLOCK_RADIUS * math.sin(track_angle)
-        G2D.PEN.strokeWeight(3)
-        G2D.PEN.line((x0, y0), (x1, y1), G2D.PEN.WHITE)
+    updatePivotPoint()
+    G2D.PEN.fillBackground(colors['BACKGROUND'])
+    G2D.PEN.circle(MID_POINT, CLOCK_RADIUS, colors['INNER_RING'], 0)
+    trackColors = (None, None) if RAINBOW_MODE else (colors['SMALL_TRACKS'], colors['BIG_TRACKS'])
+    drawTracks(MID_POINT, fetchInt('SMALL_TRACKS'), range(0, 60), 4, trackColors[0])
+    drawTracks(MID_POINT, fetchInt('BIG_TRACKS'), range(0, 12, 3), 6, trackColors[1])   
+    G2D.PEN.circle(MID_POINT, CLOCK_RADIUS, colors['OUTER_RING'], 5)
+    G2D.PEN.point(MID_POINT, colors['INNER_PIVOT'], 10)
+    tickClock()
+    G2D.PEN.point(MID_POINT, colors['OUTER_PIVOT'], 6)
 
-    G2D.PEN.circle(MID_POINT, CLOCK_RADIUS, (25, 41, 88), 5)
-    G2D.PEN.point(MID_POINT, G2D.PEN.WHITE, 8)
-
-    MID_POINT = (MID_POINT[0] - 1, MID_POINT[1])
-    G2D.PEN.strokeWeight(4)
-
-  
-
-    
-    timezone = pytz.timezone(CURRENT_TIMEZONE) 
-    datetime_NY = datetime.now(timezone)
-    timezoneLabel.set_text(CURRENT_TIMEZONE)
-    
-    sec_len = CLOCK_RADIUS * 0.7
-    min_len = CLOCK_RADIUS * 0.6
-    hrs_len = CLOCK_RADIUS * 0.5
-
+def tickClock():
+    datetime_NY = datetime.now(pytz.timezone(CURRENT_TIMEZONE))
     sec = datetime_NY.strftime("%S")
     min = datetime_NY.strftime("%M")
     hrs = datetime_NY.strftime("%H")
+
+    timezoneLabel.set_text(CURRENT_TIMEZONE)
     vertexLabel.set_text(hrs + ":" + min + ":" + sec)
 
-    sec_angle = (-90 + int(sec) * 6) * math.pi / 180
-    min_angle = (-90 + int(min) * 6) * math.pi / 180
-    hrs_angle = (-90 + int(hrs) * 30)* math.pi / 180
-
-    sec_coords = (MID_POINT[0] + sec_len * math.cos(sec_angle), MID_POINT[1] + sec_len * math.sin(sec_angle))
-    min_coords = (MID_POINT[0] + min_len * math.cos(min_angle), MID_POINT[1] + min_len * math.sin(min_angle))
-    hrs_coords = (MID_POINT[0] + hrs_len * math.cos(hrs_angle), MID_POINT[1] + hrs_len * math.sin(hrs_angle))
-    G2D.PEN.line(MID_POINT, sec_coords, G2D.PEN.RED)
-    G2D.PEN.line(MID_POINT, min_coords, G2D.PEN.GREEN)
-    G2D.PEN.line(MID_POINT, hrs_coords, G2D.PEN.BLACK)
+    if(SNAP_MODE):
+        sec = str(float(sec) + round(time.time() * 1000) % 1000 / 1000)
+        min = str(float(min) + float(sec) / 60.0)
+        hrs = str(float(hrs) + float(min) / 60.0)
    
+    drawHand((MID_POINT[0] - 1, MID_POINT[1] - 1), sec, CLOCK_RADIUS * 0.7, 0, RAINBOW_MODE)
+    drawHand((MID_POINT[0] - 1, MID_POINT[1] - 1), min, CLOCK_RADIUS * 0.6, 1, RAINBOW_MODE)
+    drawHand((MID_POINT[0] - 1, MID_POINT[1] - 1), hrs, CLOCK_RADIUS * 0.5, 2, RAINBOW_MODE)
+    pass
+'''
+id = 0 : seconds
+id = 1 : minutes
+id = 2 : hours
+'''
+def drawHand(origin, time, len, id =  0, rainbowMode = True):
+    coef = 30 if id == 2 else 6
+    angle = (-90 + float(time) * coef) * math.pi / 180
+    coordinates = (origin[0] + len * math.cos(angle), origin[1] + len * math.sin(angle))
+    max = 12 if id == 2 else 60
+    color = G2D.PEN.colorOnRainbow(G2D.map(float(time), 0, max, 0, 100) / 100) if rainbowMode else (G2D.PEN.RED, G2D.PEN.GREEN, G2D.PEN.BLACK)[id]
+    G2D.PEN.line(origin, coordinates, color, 4 + id)
 
-
+def drawTracks(origin, len, iter, stroke = 4, color = None):
+    int_div = lambda n, d: (n + d // 2) // d
+    size = int_div(iter.stop - iter.start, iter.step)
+    for i in iter:
+        track_angle = (-90 + i * (360 / size)) * math.pi / 180
+        x0 = origin[0] + (CLOCK_RADIUS - len) * math.cos(track_angle)
+        y0 = origin[1] + (CLOCK_RADIUS - len) * math.sin(track_angle)
+        x1 = origin[0] + (CLOCK_RADIUS - 3) * math.cos(track_angle) # -3 is need because tracks are being drawn out of clock
+        y1 = origin[1] + (CLOCK_RADIUS - 3) * math.sin(track_angle)
+        t = G2D.map(i, 0, size, 0, 100) / 100
+        rgb = G2D.PEN.colorOnRainbow(t) if color == None else color
+        G2D.PEN.line((x0, y0), (x1, y1), rgb, stroke)
 
 def handleEvent(this, event):
     global CURRENT_TIMEZONE
     manager.process_events(event)
+    if event.type == G2D.PYGAME_INSTANCE_.USEREVENT and event.user_type == pygame_gui.UI_BUTTON_PRESSED:
+        if event.ui_element == snap_button:
+            global SNAP_MODE
+            SNAP_MODE = not SNAP_MODE
+        if event.ui_element == rgb_button:
+            global RAINBOW_MODE
+            RAINBOW_MODE = not RAINBOW_MODE
     if event.type == G2D.PYGAME_INSTANCE_.USEREVENT:
          if event.user_type == pygame_gui.UI_DROP_DOWN_MENU_CHANGED:
             CURRENT_TIMEZONE = event.text
-    # if event.type == G2D.PYGAME_INSTANCE_.USEREVENT:
-    #     if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
-    #         if event.ui_element == stringBtn:
-    #             bezierDrawer.STRING_ART =  not bezierDrawer.STRING_ART
+    if event.type == G2D.PYGAME_INSTANCE_.VIDEORESIZE:
+        global label3, label6, label9, label12
+        updatePivotPoint()
+
+        label3.kill()
+        label3 = updateLabel(MID_POINT, "3")
+        label6.kill()
+        label6 = updateLabel(MID_POINT, "6")
+        label9.kill()
+        label9 = updateLabel(MID_POINT, "9")
+        label12.kill()
+        label12 = updateLabel(MID_POINT, "12")
+    pass
+
+
 def update(this):
+    global CANVAS_BORDER, BOTTOM_MENU_BORDERS, bottom_panel
     manager.update(G2D.clock.get_time()/1000.0)
     G2D.WINDOW.blit(G2D.WINDOW, (0, 0))
     manager.draw_ui(G2D.WINDOW)
-    # if slider.has_moved_recently:
-    #     value = int(slider.get_current_value())
-    #     slider_label.set_text(str(value))
-    #     VERTICES = value
-    # if strokeSlider.has_moved_recently:
-    #     value = int(strokeSlider.get_current_value())
-    #     stroke_slider_label.set_text(str(value))
-    #     G2D.PEN.strokeWeight(value)
+    pass
 
 G2D.setEventLogic(handleEvent)
 G2D.setDrawLogic(draw)

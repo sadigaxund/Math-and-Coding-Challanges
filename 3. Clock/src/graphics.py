@@ -46,7 +46,10 @@ class Renderer:
         self.clock = self.PYGAME_INSTANCE_.time.Clock() # The clock will be used to control how fast the screen updates
         self.PEN = Pen(self.WINDOW, self.PYGAME_INSTANCE_)
         self.Rect = self.PYGAME_INSTANCE_.Rect
-
+    
+    def setWindowSize(self, w, h):
+        self.WINDOW_SIZE = (w, h)
+        self.WINDOW = self.PYGAME_INSTANCE_.display.set_mode(self.WINDOW_SIZE, self.PYGAME_INSTANCE_.RESIZABLE)
     def setUpdateLogic(self, update):
         self.__LOGIC.update = types.MethodType(update, self.__LOGIC)
     def setDrawLogic(self, draw):
@@ -56,6 +59,14 @@ class Renderer:
 
     def getMousePos(self):
         return self.PYGAME_INSTANCE_.mouse.get_pos()
+    def map(self, x, in_min, in_max, out_min, out_max):
+        return int((x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min)
+     # function for linear interpolation for a coordinate
+    def lerp(self, c0, c1, t):
+        return c0 + (c1 - c0) * t
+    # function for linear interpolation for a vector
+    def lerp2D(self, p0, p1, t):
+        return (self.lerp(p0[0], p1[0], t), self.lerp(p0[1], p1[1], t))
     def getEdges(self, origin, width, height):
         p1 = (origin[0], origin[1])
         p2 = (origin[0] + width, origin[1])
@@ -69,7 +80,10 @@ class Renderer:
             for event in self.PYGAME_INSTANCE_.event.get(): 
                 if event.type == self.PYGAME_INSTANCE_.QUIT: 
                     self.carryOn = False 
+                if event.type == pygame.VIDEORESIZE:
+                    self.setWindowSize(event.w, event.h)
                 self.__LOGIC.handleEvent(event)
+
             self.__LOGIC.draw()
             self.__LOGIC.update()
             self.PYGAME_INSTANCE_.display.update()
