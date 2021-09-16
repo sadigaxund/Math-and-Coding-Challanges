@@ -1,2 +1,1 @@
-# Bezier-curve-Visualization
-Bézier curve Visualization using Python
+# Basic Clock in Python
