@@ -40,9 +40,12 @@ MARGIN = fetchInt('MARGIN')
 
 
 class Disk:
-    def __init__(self, G2D, bounds, color = None) -> None:
+    def __init__(self, G2D, bounds, index, color = None) -> None:
         self.bounds = bounds
+        self.pos = (bounds.top, bounds.left)
+        self.size = (bounds.width, bounds.height)
         self.G2D = G2D
+        self.index = index
         self.color = G2D.PEN.GREEN if color == None else color
         pass
     def draw(self):
@@ -55,8 +58,8 @@ class Tower:
     DISKS:Disk = []
 
     def __init__(self, G2D, bounds) -> None:
-        self.rod_width = int(bounds.width * 0.1)
-        self.rod_height = int(bounds.height)
+        self.rod_width = int(bounds.width * 0.06)
+        self.rod_height = int(bounds.height*1.35)
         self.base_width = int(bounds.width)
         self.base_height = int(bounds.height* 0.17)
         self.disk_height = int(bounds.height * 0.15)
@@ -66,55 +69,107 @@ class Tower:
     def addDisk(self, index = None, size = None, color = None):
         self.DISK_AMOUNT = self.DISK_AMOUNT + 1
         index = self.DISK_AMOUNT if index == None else index + 1
-
         t =  (10 - index + 1) / 15
+
         w = self.base_width * t
         h = self.disk_height
-        x = self.bounds.left + (self.base_width - w) / 2
-        y = self.bounds.top + self.bounds.height - self.base_height - self.disk_height * self.DISK_AMOUNT 
-        
         (w, h) = (w, h) if size == None else size
-        color = self.G2D.PEN.colorOnRainbow(1 - t * 3 / 2) if color == None else color
 
-        self.DISKS.append(Disk(self.G2D, self.G2D.Rect(x, y, w, h), color))
+        x = self.bounds.left + (self.base_width - w) / 2
+        y = self.bounds.bottom - self.base_height - self.disk_height * self.DISK_AMOUNT 
         
-        pass
+        color = self.G2D.PEN.colorOnRainbow(t * 3 / 2 + 0.1) if color == None else color
+        self.DISKS.append(Disk(self.G2D, self.G2D.Rect(x, y, w, h), index, color))
+        
+        
     def pop(self):
         self.DISK_AMOUNT = self.DISK_AMOUNT - 1
         return self.DISKS.pop()
-    def push(self, disk):
 
-        pass
+    def push(self, disk):
+        self.addDisk(size = disk.size, color = disk.color)
+        
         
     
     def draw(self):
         # Draw Rod
-        self.G2D.PEN.drawRoundRect(G2D.Rect(self.bounds[0], self.bounds[1] + self.rod_height - self.base_height, 
-                                    self.bounds[2], self.base_height), 2, "#964B00", 0)
+        self.G2D.PEN.drawRoundRect(G2D.Rect(self.bounds.left + (self.bounds.width - self.rod_width)/2 - 1, self.bounds.bottom - self.rod_height - self.base_height + 5,
+                                    self.rod_width, self.rod_height), 2, "#FFFFFF", 0)
         # Draw Disks
         for disk in self.DISKS:
             disk.draw()
         # Draw Base
-        self.G2D.PEN.drawRoundRect(G2D.Rect(self.bounds[0], self.bounds[1] + self.rod_height - self.base_height, 
-                                    self.bounds[2], self.base_height), 2, "#964B00", 0)
+        self.G2D.PEN.drawRoundRect(G2D.Rect(self.bounds.left, self.bounds.bottom - self.base_height, self.bounds.width, self.base_height), 2, "#964B00", 0)
 
         pass
 
-tower = Tower(G2D, G2D.Rect(100, 100, 200, 100))
+tower_size = (200, 100)
+
+y = G2D.WINDOW_SIZE[1] / 2 - tower_size[1] / 2
+xMid = G2D.WINDOW_SIZE[0] / 2 - tower_size[0] / 2
+someMargin = 100
+
+
+
+towers =    [  
+                Tower(G2D, G2D.Rect(xMid - tower_size[0] - someMargin, y, tower_size[0], tower_size[1])), 
+                Tower(G2D, G2D.Rect(xMid, y, tower_size[0], tower_size[1])), 
+                Tower(G2D, G2D.Rect(xMid + tower_size[0] + someMargin, y, tower_size[0], tower_size[1]))
+            ]
+
+def initTowers(startAmount):
+    for tower in towers:
+        while tower.DISK_AMOUNT > 0:
+            tower.pop()
+
+    for i in range(0, startAmount):
+        towers[0].addDisk(8 - (startAmount - i - 1))
+
+initTowers(3)
 
 # rod1 = Rod(G2D, (100, 100), ROD_LENGTH)
 def draw(this):
     G2D.PEN.fillBackground(colors['BACKGROUND'])
-    tower.draw()
+    for tower in towers:
+        tower.draw()
 
-    
+DRAGING = False
 
-
+def handleTowerDragging(tower:Tower, pos):
+    global DRAGING, offset_x, offset_y, mouse_x, mouse_y, diskToDrag
+    for disk in tower.DISKS:
+        if disk.bounds.collidepoint(pos):
+            print(disk)
+            DRAGING = True
+            mouse_x, mouse_y = pos
+            offset_x = disk.bounds.x - mouse_x
+            offset_y = disk.bounds.y - mouse_y
+            diskToDrag = disk
+            break
+def handleDiskDragging(pos):
+    global DRAGING, offset_x, offset_y, mouse_x, mouse_y, diskToDrag
+    if DRAGING:
+        mouse_x, mouse_y = pos
+        diskToDrag.x = mouse_x + offset_x
+        diskToDrag.y = mouse_y + offset_y
 
 
 def handleEvent(this, event):
     manager.process_events(event)
-    pass
+    if event.type == G2D.PYGAME_INSTANCE_.MOUSEBUTTONDOWN and event.button == 1:
+        for tower in towers:
+            if tower.bounds.collidepoint(event.pos):
+                print(tower)
+                handleTowerDragging(tower, event.pos)
+                break
+    if event.type == G2D.PYGAME_INSTANCE_.MOUSEBUTTONUP:
+            global DRAGING
+            if event.button == 1:            
+                DRAGING = False
+    if event.type == G2D.PYGAME_INSTANCE_.MOUSEMOTION:
+        handleDiskDragging(event.pos)
+        pass
+
 
 
 def update(this):
