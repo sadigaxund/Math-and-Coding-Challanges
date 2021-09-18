@@ -120,9 +120,7 @@ label6 = updateLabel(MID_POINT, "6")
 label9 = updateLabel(MID_POINT, "9")
 label12 = updateLabel(MID_POINT, "12")
 
-'''
-Function that maps a value to anther provided an initial and a desired range
-'''
+
 
 
 RAINBOW_MODE = False    # if True: colors are of rainbow pattern, else: normal color
