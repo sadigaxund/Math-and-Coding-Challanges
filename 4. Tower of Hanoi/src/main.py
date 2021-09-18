@@ -40,7 +40,7 @@ G2D = Renderer((fetchInt('WINDOW_WIDTH'), fetchInt('WINDOW_HEIGHT')), 'Tower of 
 MANAGER = pygame_gui.UIManager(G2D.WINDOW_SIZE)
 
 ############################ <------- START GUI -------> ############################
-MARGIN = fetchInt('MARGIN')
+MARGIN = 5
 MENU_HEIGHT = 40
 SLIDER_WIDTH = 200
 LABEL_WIDTH = 30
@@ -59,21 +59,23 @@ LABEL_BORDER =  G2D.Rect(MARGIN * 2, LABEL_Y, LABEL_WIDTH * 3, LABEL_HEIGHT)
 diskLabel = pygame_gui.elements.UILabel(LABEL_BORDER, "Disks: 3", MANAGER, MENU)
 
 BUTTON_BORDER = G2D.Rect(LABEL_BORDER.right + MARGIN * 2, (MENU_HEIGHT - BUTTON_SIZE)/2 - 3, BUTTON_SIZE, BUTTON_SIZE)
-upBtn = pygame_gui.elements.UIButton(BUTTON_BORDER, '↑', MANAGER, MENU,'#up')
+upBtn = pygame_gui.elements.UIButton(BUTTON_BORDER, '↑', MANAGER, MENU,'Add Disk')
 
 BUTTON_BORDER = G2D.Rect(BUTTON_BORDER.right + MARGIN, (MENU_HEIGHT - BUTTON_SIZE)/2 - 3, BUTTON_SIZE, BUTTON_SIZE)
-downBtn = pygame_gui.elements.UIButton(BUTTON_BORDER, '↓', MANAGER, MENU,'#down')
+downBtn = pygame_gui.elements.UIButton(BUTTON_BORDER, '↓', MANAGER, MENU,'Remove Disk')
 
-LABEL_BORDER =  G2D.Rect(MENU_BORDERS.right - MARGIN * 6 - LABEL_BORDER.width, LABEL_Y, LABEL_WIDTH * 3, LABEL_HEIGHT)
+BUTTON_SIZE *= 1.1
+BUTTON_BORDER = G2D.Rect(BUTTON_BORDER.right + MARGIN, (MENU_HEIGHT - BUTTON_SIZE)/2 - 2, BUTTON_SIZE * 4, BUTTON_SIZE)
+restartBtn = pygame_gui.elements.UIButton(BUTTON_BORDER, 'Restart', MANAGER, MENU)
+
+LABEL_BORDER =  G2D.Rect(MENU_BORDERS.right - MARGIN * 6 - LABEL_BORDER.width, LABEL_Y, LABEL_WIDTH * 4, LABEL_HEIGHT)
 minimumLabel = pygame_gui.elements.UILabel(LABEL_BORDER, "Minimum: 7", MANAGER, MENU)
 
-LABEL_BORDER =  G2D.Rect(LABEL_BORDER.left - MARGIN * 3 - LABEL_BORDER.width, LABEL_Y, LABEL_WIDTH * 3, LABEL_HEIGHT)
+LABEL_BORDER =  G2D.Rect(LABEL_BORDER.left - LABEL_BORDER.width, LABEL_Y, LABEL_WIDTH * 3, LABEL_HEIGHT)
 movesLabel = pygame_gui.elements.UILabel(LABEL_BORDER, "Moves: 0", MANAGER, MENU)
-BUTTON_SIZE *= 1.1
-BUTTON_BORDER = G2D.Rect(G2D.WINDOW_SIZE[0]/2 - BUTTON_SIZE * 2, (MENU_HEIGHT - BUTTON_SIZE)/2 - 2, BUTTON_SIZE * 4, BUTTON_SIZE)
-restartBtn = pygame_gui.elements.UIButton(BUTTON_BORDER, 'Restart', MANAGER, MENU,'#restart')
 
-LABEL_BORDER =  G2D.Rect(G2D.WINDOW_SIZE[0]/2 - 100, MENU_BORDERS.height+20, 200, 100)
+
+LABEL_BORDER =  G2D.Rect(G2D.WINDOW_SIZE[0]/2 - 100, MENU_BORDERS.height + 20, 200, 100)
 winLbl = pygame_gui.elements.UILabel(LABEL_BORDER, "Solved!", MANAGER)
 winLbl.hide()
 ############################## <------- END GUI -------> ############################
@@ -82,13 +84,18 @@ winLbl.hide()
 
 ############################## <------- START GAME -------> #########################
 
+# <--- Start - Tower Dimensions ---> #
 towerSize = (200, 200)
 y = G2D.WINDOW_SIZE[1] / 2 - towerSize[1] / 2 + MENU_BORDERS.height
 xMid = G2D.WINDOW_SIZE[0] / 2 - towerSize[0] / 2
 someMargin = 100
+# <--- End  - Tower Dimensions ---> #
+
 # Varibale that holds the instance of Disk, when any was popped
 DISK_ON_HAND = None
+# The number of disks
 DISKS_AMOUNT = 3
+# The number of moves
 MOVES = 0
 # List of Towers
 towers =    [  
@@ -163,7 +170,7 @@ def handleEvent(this, event):
                 if DISKS_AMOUNT < 8:
                     DISKS_AMOUNT += 1
             if event.ui_element == downBtn:
-                if DISKS_AMOUNT > 0:
+                if DISKS_AMOUNT > 3:
                     DISKS_AMOUNT -= 1
             if event.ui_element in {restartBtn, upBtn, downBtn}:
                 MOVES = 0
