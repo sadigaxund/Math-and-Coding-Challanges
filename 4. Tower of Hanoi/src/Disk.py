@@ -1,8 +1,8 @@
 class Disk:
     def __init__(self, G2D, bounds, index, color = None) -> None:
-        self.pos = [bounds.left, bounds.top]
-        self.size = [bounds.width, bounds.height]
-        self.G2D = G2D
+        self.pos = [bounds.left, bounds.top] # Location of the Disk
+        self.size = [bounds.width, bounds.height] # Size of the Disk
+        self.G2D = G2D  # Graphics tool
         self.index = index # index defines the color and the width of the Disk
         self.color = G2D.PEN.GREEN if color == None else color
 

@@ -95,7 +95,7 @@ def clickTower(this, event):
         l = len(towers) # You could just put 3 here, it is need for future if the number of towers can change
         for i in range(0, l):
             # If player clicks on one of tower
-            if towers[i].bounds.collidepoint(event.pos): 
+            if towers[i].hitbox.collidepoint(event.pos): 
                 # If there is no disk on hand, pop one out
                 if DISK_ON_HAND == None:
                     DISK_ON_HAND = towers[i].pop()
@@ -105,17 +105,17 @@ def clickTower(this, event):
                     break
                 # If the same tower was clicked
                 else:
-                    diff = towers[i].bounds.x - DISK_ON_HAND.pos[0]
+                    diff = towers[i].hitbox.x - DISK_ON_HAND.pos[0]
                     # Size difference between disk on hand and the top disk in tower
                     size_diff = DISK_ON_HAND.size[0] - towers[i].DISKS[-1].size[0] if towers[i].size() > 0 else -1 
                     # If the difference of coordinates is more than tower size then the selected tower is far
-                    if abs(diff) < towers[i].bounds.width:
+                    if abs(diff) < towers[i].hitbox.width:
                         # negative means tower has bigger disk
                         if size_diff < 0:
                             towers[i].push(DISK_ON_HAND) # add current disk to the tower
                             DISK_ON_HAND = None # no more current disk
                     else: # if the different tower was clicked
-                        DISK_ON_HAND.pos[0] = towers[i].bounds.left + (towers[i].base_width - DISK_ON_HAND.size[0]) / 2
+                        DISK_ON_HAND.pos[0] = towers[i].hitbox.left + (towers[i].base_width - DISK_ON_HAND.size[0]) / 2
                 break
 
 def handleEvent(this, event):

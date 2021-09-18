@@ -1,15 +1,15 @@
 from Disk import Disk
 class Tower:
     def __init__(self, G2D, bounds) -> None:
-        self.base_width = int(bounds.width)
-        self.base_height = int(bounds.height * 0.13)
-        self.rod_width = int(bounds.width * 0.06)
-        self.rod_height = int(bounds.height - self.base_height)
-        self.disk_height = int(bounds.height * 0.09)
-        self.bounds = bounds
-        self.G2D = G2D
-        # self.DISK_AMOUNT = 0
-        self.DISKS = []
+        self.base_width = int(bounds.width) # Width of the Base of a Tower
+        self.base_height = int(bounds.height * 0.13) # Height of the Base of a Tower
+        self.rod_width = int(bounds.width * 0.06) # Width of the Rod of a Tower
+        self.rod_height = int(bounds.height - self.base_height) # Height of the Rod of a Tower
+        self.disk_height = int(bounds.height * 0.09) # Height of the Disks
+        # Width is going to be determined individually
+        self.hitbox = bounds # Hitbox of the Tower
+        self.G2D = G2D # Graphics tool
+        self.DISKS = [] # List of Disks
 
     def addDisk(self, index = None, size = None, color = None):
         disks_amount = len(self.DISKS) + 1 # the number of disks after adding the disk, needed for calculation
@@ -18,37 +18,40 @@ class Tower:
 
         w = self.base_width * t
         h = self.disk_height
-        (w, h) = (w, h) if size == None else size
+        (w, h) = (w, h) if size == None else size # if the size is given earlier use that
 
-        x = self.bounds.left + (self.base_width - w) / 2
-        y = self.bounds.bottom - self.base_height - self.disk_height * disks_amount
+        x = self.hitbox.left + (self.base_width - w) / 2
+        y = self.hitbox.bottom - self.base_height - self.disk_height * disks_amount
         
-        color = self.G2D.PEN.colorOnRainbow(t * 3 / 2 + 0.1) if color == None else color
-        self.DISKS.append(Disk(self.G2D, self.G2D.Rect(x, y, w, h), index, color))
-        
+        color = self.G2D.PEN.colorOnRainbow(t * 3 / 2 + 0.1) if color == None else color # if the color is given earlier use that
+        self.DISKS.append(Disk(self.G2D, self.G2D.Rect(x, y, w, h), index, color)) # add to list
+    
+    # Method to pop a disk from the stack of the tower
     def pop(self):
         if(not bool(self.DISKS)):
             return None
         return self.DISKS.pop()
 
+    # Method to push a disk to the stack of the tower
     def push(self, disk):
         self.addDisk(size = disk.size, color = disk.color)
     
     def draw(self):
         # Draw Rod
-        rodX = self.bounds.left + (self.bounds.width - self.rod_width)/2 - 1
-        rodY = self.bounds.bottom - self.rod_height - self.base_height + 5
-        self.ROD = self.G2D.Rect(rodX, rodY, self.rod_width, self.rod_height)
+        rodX = self.hitbox.left + (self.hitbox.width - self.rod_width)/2 - 1
+        rodY = self.hitbox.bottom - self.rod_height - self.base_height + 5
+        self.ROD = self.G2D.Rect(rodX, rodY, self.rod_width, self.rod_height) # Rod hitbox
         self.G2D.PEN.drawRoundRect(self.ROD, 2, "#FFFFFF", 0)
         # Draw Disks
         for disk in self.DISKS:
             disk.draw()
         # Draw Base
-        self.G2D.PEN.drawRoundRect(self.G2D.Rect(self.bounds.left, self.bounds.bottom - self.base_height, 
-                                    self.bounds.width, self.base_height), 2, "#964B00", 0)
+        self.G2D.PEN.drawRoundRect(self.G2D.Rect(self.hitbox.left, self.hitbox.bottom - self.base_height, 
+                                    self.hitbox.width, self.base_height), 2, "#964B00", 0)
 
     def size(self):
         return len(self.DISKS)
+        
     def disksToString(self):
         retval = "[ ----- " 
         for disk in self.DISKS:
