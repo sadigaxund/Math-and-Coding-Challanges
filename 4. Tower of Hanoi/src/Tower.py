@@ -1,11 +1,11 @@
 from Disk import Disk
 class Tower:
     def __init__(self, G2D, bounds) -> None:
-        self.rod_width = int(bounds.width * 0.06)
-        self.rod_height = int(bounds.height)
         self.base_width = int(bounds.width)
-        self.base_height = int(bounds.height * 0.15)
-        self.disk_height = int(bounds.height * 0.13)
+        self.base_height = int(bounds.height * 0.13)
+        self.rod_width = int(bounds.width * 0.06)
+        self.rod_height = int(bounds.height - self.base_height)
+        self.disk_height = int(bounds.height * 0.09)
         self.bounds = bounds
         self.G2D = G2D
         # self.DISK_AMOUNT = 0

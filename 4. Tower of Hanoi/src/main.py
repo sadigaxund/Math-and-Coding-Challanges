@@ -23,6 +23,7 @@ SOFTWARE.
 '''
 
 
+
 from util.graphics import Renderer
 from Tower import Tower
 import pygame_gui 
@@ -49,17 +50,21 @@ MARGIN = fetchInt('MARGIN')
 
 ############################## <------- START GAME -------> #########################
 
-towerSize = (200, 150)
+towerSize = (200, 200)
 y = G2D.WINDOW_SIZE[1] / 2 - towerSize[1] / 2
 xMid = G2D.WINDOW_SIZE[0] / 2 - towerSize[0] / 2
 someMargin = 100
-
+# Varibale that holds the instance of Disk, when any was popped
+DISK_ON_HAND = None
+# List of Towers
 towers =    [  
                 Tower(G2D, G2D.Rect(xMid - towerSize[0] - someMargin, y, towerSize[0], towerSize[1])), 
                 Tower(G2D, G2D.Rect(xMid, y, towerSize[0], towerSize[1])), 
                 Tower(G2D, G2D.Rect(xMid + towerSize[0] + someMargin, y, towerSize[0], towerSize[1]))
             ]
 
+# Function that initiates the Towers 
+# Note: Modify this if you want to change the number of towers
 def initTowers(startAmount):
     for tower in towers:
         while bool(tower.DISKS):
@@ -70,24 +75,24 @@ def initTowers(startAmount):
 
 initTowers(8)
 
-DISK_ON_HAND = None
+
 
 def draw(this):
+    # Fill Background with the given color in config.ini file
     G2D.PEN.fillBackground(colors['BACKGROUND'])
+    # Draw Towers
     for tower in towers:
         tower.draw()
-    
+    # Draw a Disk if any was popped
     if DISK_ON_HAND != None:
         DISK_ON_HAND.draw()
-        pass
-    # x = self.bounds.left + (self.base_width - w) / 2
 
 
 
 def clickTower(this, event):
     global DISK_ON_HAND
     if event.type == G2D.PYGAME_INSTANCE_.MOUSEBUTTONDOWN and event.button == 1:
-        l = len(towers)
+        l = len(towers) # You could just put 3 here, it is need for future if the number of towers can change
         for i in range(0, l):
             # If player clicks on one of tower
             if towers[i].bounds.collidepoint(event.pos): 
