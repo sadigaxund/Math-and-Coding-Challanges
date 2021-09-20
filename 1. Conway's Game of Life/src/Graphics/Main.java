@@ -46,13 +46,13 @@ import javax.swing.event.ChangeListener;
 
 import Utils.JHardware;
 
-public class MainFrame extends JFrame {
+public class Main extends JFrame {
     /**
      * 
      */
     private static final long serialVersionUID = 6187669053453265918L;
 
-    public MainFrame() {
+    public Main() {
 	try {
 	    initUI();
 	    initListeners();
@@ -205,7 +205,7 @@ public class MainFrame extends JFrame {
     }
 
     public static void main(String[] args) {
-	MainFrame ex = new MainFrame();
+	Main ex = new Main();
 	ex.setVisible(true);
 	new Thread(ex.surf).start();
     }

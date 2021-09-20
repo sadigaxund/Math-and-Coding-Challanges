@@ -55,7 +55,7 @@ public class Surface extends SurfaceAdapter {
     public Surface(int window_width, int window_heigth) {
 	super();
 	setBounds(getX(), getY(), window_width, window_heigth);
-	setPattern(GUN);
+	setPattern(BLANK);
     }
 
     @Override

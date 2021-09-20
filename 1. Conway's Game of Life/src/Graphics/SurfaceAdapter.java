@@ -54,7 +54,7 @@ public abstract class SurfaceAdapter extends JPanel
     public static final int ELIMINATE_CELL_MODE = 1;
     public static final int INVERT_CELL_MODE = 2;
    
-
+    public static final String[] BLANK = new String[] {};
     public static final String[] ACORN = new String[] { "OO  OOO", ":::O:::", ":O" };
     public static final String[] GUN = new String[] { "                        O             ",
 	    "                      O O             ", "            OO      OO            OO",
