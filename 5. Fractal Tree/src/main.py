@@ -25,6 +25,7 @@ SOFTWARE.
 
 
 from util.graphics import Renderer
+from util.Point import Point
 import math
 import pygame_gui 
 import configparser
@@ -88,7 +89,9 @@ RAINBOW = True
 BRANCH_ANGLE = 30
 BRANCH_LEN = 10
 START_DEPTH = 9
-START_POS = [G2D.WINDOW_SIZE[0] / 2, G2D.WINDOW_SIZE[1]]
+START_POS = Point(G2D.WINDOW_SIZE[0] / 2, G2D.WINDOW_SIZE[1])
+DRAGGING = False
+LAST_DRAG_POS = Point(0, 0)
 
 def drawTree(x1, y1, depth, angle = -90):
     global BRANCH_ANGLE, RAINBOW, START_DEPTH, BRANCH_LEN
@@ -107,17 +110,28 @@ def drawTree(x1, y1, depth, angle = -90):
 def draw(this):
     # Fill Background with the given color in config.ini file
     G2D.PEN.fillBackground(colors['BACKGROUND'])
-
     drawTree(START_POS[0], START_POS[1], START_DEPTH)
 
 
+def handleDragScreen(this, event):
+    global LAST_DRAG_POS, DRAGGING, START_POS
+    if event.type == G2D.PYGAME_INSTANCE_.MOUSEBUTTONDOWN:
+        if event.button == 1:
+            DRAGGING = True            
+                
+    if event.type == G2D.PYGAME_INSTANCE_.MOUSEBUTTONUP:
+        if event.button == 1:            
+            DRAGGING = False
 
+    if event.type == G2D.PYGAME_INSTANCE_.MOUSEMOTION:
+        if DRAGGING:
+            Offset = LAST_DRAG_POS - Point.convert2Point(event.pos)
+            START_POS -= Offset
+            pass
+        LAST_DRAG_POS = Point.convert2Point(event.pos)
 
-
-
-def handleEvent(this, event):
+def handleUIComponents(this, event):
     global BRANCH_ANGLE, START_DEPTH, BRANCH_LEN, RAINBOW
-    MANAGER.process_events(event)
     if event.type == G2D.PYGAME_INSTANCE_.USEREVENT:
         if event.user_type == pygame_gui.UI_BUTTON_PRESSED:
             if event.ui_element == rainbowBtn:
@@ -135,6 +149,15 @@ def handleEvent(this, event):
                     BRANCH_LEN -= 1
     if slider.has_moved_recently:
         BRANCH_ANGLE = int(slider.get_current_value())
+    pass
+            
+
+def handleEvent(this, event):
+    MANAGER.process_events(event)
+    handleUIComponents(this, event)
+    handleDragScreen(this, event)
+
+
         
     
 
