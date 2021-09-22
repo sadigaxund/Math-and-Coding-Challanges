@@ -4,6 +4,7 @@ import java.awt.Image;
 import java.awt.Point;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.io.File;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -59,6 +60,7 @@ public class MultiStateButton extends JButton implements MouseListener {
 	this.index = index;
 	Image Icon = JImages.scaleImage(new ImageIcon("./res/" + icons[index] + ".png").getImage(), iconSize.x,
 		iconSize.y);
+	
 	setIcon(new ImageIcon(Icon));
     }
 

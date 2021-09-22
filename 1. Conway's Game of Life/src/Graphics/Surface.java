@@ -6,6 +6,7 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.HashSet;
+import java.util.Set;
 
 import pzemtsov.HashGrid;
 import util.HashPoint;
@@ -55,7 +56,7 @@ public class Surface extends SurfaceAdapter {
     public Surface(int window_width, int window_heigth) {
 	super();
 	setBounds(getX(), getY(), window_width, window_heigth);
-	setPattern(BLANK);
+	setPattern(Experimental.getJavaPattern());
     }
 
     @Override
@@ -116,7 +117,7 @@ public class Surface extends SurfaceAdapter {
     public void draw(Point point, int mode) {
 	// Convert location on the screen to the location on the map
 	Point pt = getLocationOnMap(point);
-
+	
 	if (mode != ELIMINATE_CELL_MODE && forbidList.contains(pt))
 	    return; // return if the current cell has already being modified while mouse is pressed
 	else
@@ -136,9 +137,29 @@ public class Surface extends SurfaceAdapter {
 	}
 
     }
+    public void clear() {
+	Set<Point> s = map.get();
+	for(Point pt: s) 
+	    map.remove(map.getLinkedCellObject(pt.x, pt.y));
+	
+//	Point pt = s.iterator().next();
+//	map.setFull_list(map.getLinkedCellObject(pt.x, y));
+	
+    }
 
     public void draw(int x, int y, int mode) {
 	draw(new Point(x, y), mode);
+
+//	draw(new Point(x + grid_size, y), mode);
+//	draw(new Point(x + grid_size, y + grid_size), mode);
+//	draw(new Point(x, y + grid_size), mode);
+//	draw(new Point(x - grid_size, y), mode);
+//	draw(new Point(x - grid_size, y - grid_size), mode);
+//	draw(new Point(x, y - grid_size), mode);
+//	draw(new Point(x + grid_size, y - grid_size), mode);
+//	draw(new Point(x - grid_size, y + grid_size), mode);
+	
+	
     }
 
     private void setPattern(String[] pattern) {

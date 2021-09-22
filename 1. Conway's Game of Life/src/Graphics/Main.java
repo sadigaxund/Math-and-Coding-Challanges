@@ -34,6 +34,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -113,6 +114,9 @@ public class Main extends JFrame {
 	drawButton.setName("drawBtn");
 	drawModeButton = new MultiStateButton(BUTTON_ICON_SIZE, "white", "darkestBlue", "inverted");
 	drawModeButton.setName("modeBtn");
+	eraseBtn = new MultiStateButton(BUTTON_ICON_SIZE * 11 / 10, "eraser");
+	eraseBtn.setName("eraseBtn");
+	
 
 	SpringLayout sl_BOTTOM_PANEL = new SpringLayout();
 	sl_BOTTOM_PANEL.putConstraint(SpringLayout.WEST, lblLatency, X_MARGIN, SpringLayout.WEST, BOTTOM_PANEL);
@@ -132,8 +136,8 @@ public class Main extends JFrame {
 	sl_BOTTOM_PANEL.putConstraint(SpringLayout.NORTH, lblMs, Y_MARGIN, SpringLayout.NORTH, BOTTOM_PANEL);
 	sl_BOTTOM_PANEL.putConstraint(SpringLayout.SOUTH, lblMs, -Y_MARGIN, SpringLayout.SOUTH, BOTTOM_PANEL);
 
-	sl_BOTTOM_PANEL.putConstraint(SpringLayout.WEST, pauseButton, X_MARGIN, SpringLayout.EAST, lblMs);
-	sl_BOTTOM_PANEL.putConstraint(SpringLayout.EAST, pauseButton, BUTTON_SIZE + X_MARGIN, SpringLayout.EAST, lblMs);
+	sl_BOTTOM_PANEL.putConstraint(SpringLayout.WEST, pauseButton, X_MARGIN * 5, SpringLayout.EAST, lblMs);
+	sl_BOTTOM_PANEL.putConstraint(SpringLayout.EAST, pauseButton, BUTTON_SIZE + X_MARGIN * 5, SpringLayout.EAST, lblMs);
 	sl_BOTTOM_PANEL.putConstraint(SpringLayout.NORTH, pauseButton, Y_MARGIN, SpringLayout.NORTH, BOTTOM_PANEL);
 	sl_BOTTOM_PANEL.putConstraint(SpringLayout.SOUTH, pauseButton, -Y_MARGIN, SpringLayout.SOUTH, BOTTOM_PANEL);
 
@@ -149,6 +153,14 @@ public class Main extends JFrame {
 	sl_BOTTOM_PANEL.putConstraint(SpringLayout.NORTH, drawModeButton, Y_MARGIN, SpringLayout.NORTH, BOTTOM_PANEL);
 	sl_BOTTOM_PANEL.putConstraint(SpringLayout.SOUTH, drawModeButton, -Y_MARGIN, SpringLayout.SOUTH, BOTTOM_PANEL);
 
+	sl_BOTTOM_PANEL.putConstraint(SpringLayout.WEST, eraseBtn, X_MARGIN, SpringLayout.EAST, drawModeButton);
+	sl_BOTTOM_PANEL.putConstraint(SpringLayout.EAST, eraseBtn, BUTTON_SIZE + X_MARGIN, SpringLayout.EAST,
+		drawModeButton);
+	sl_BOTTOM_PANEL.putConstraint(SpringLayout.NORTH, eraseBtn, Y_MARGIN, SpringLayout.NORTH, BOTTOM_PANEL);
+	sl_BOTTOM_PANEL.putConstraint(SpringLayout.SOUTH, eraseBtn, -Y_MARGIN, SpringLayout.SOUTH, BOTTOM_PANEL);
+
+
+	
 	BOTTOM_PANEL.setLayout(sl_BOTTOM_PANEL);
 	BOTTOM_PANEL.add(lblLatency);
 	BOTTOM_PANEL.add(slider);
@@ -156,6 +168,7 @@ public class Main extends JFrame {
 	BOTTOM_PANEL.add(pauseButton);
 	BOTTOM_PANEL.add(drawButton);
 	BOTTOM_PANEL.add(drawModeButton);
+	BOTTOM_PANEL.add(eraseBtn);
 
 	getContentPane().add(BOTTOM_PANEL);
 	getContentPane().add(surf);
@@ -181,8 +194,10 @@ public class Main extends JFrame {
 	    @Override
 	    public void mouseClicked(MouseEvent e) {
 		surf.setDrawable(drawButton.getState());
-		surf.setPaused(drawButton.getState());
-		pauseButton.setState(drawButton.getState());
+		if (drawButton.getState()) {
+		    surf.setPaused(drawButton.getState());
+		    pauseButton.setState(drawButton.getState());
+		}
 	    }
 	});
 	pauseButton.addMouseListener(new MouseAdapter() {
@@ -190,8 +205,8 @@ public class Main extends JFrame {
 	    public void mouseClicked(MouseEvent e) {
 		surf.setPaused(pauseButton.getState());
 		if (!pauseButton.getState()) {
-		    surf.setDrawable(false);
-		    drawButton.setState(false);
+		    surf.setDrawable(pauseButton.getState());
+		    drawButton.setState(pauseButton.getState());
 		}
 	    }
 	});
@@ -199,6 +214,13 @@ public class Main extends JFrame {
 	    @Override
 	    public void mouseClicked(MouseEvent e) {
 		surf.setMode(drawModeButton.getIndex());
+	    }
+	});
+	eraseBtn.addMouseListener(new MouseAdapter() {
+	    @Override
+	    public void mouseClicked(MouseEvent e) {
+		surf.clear();
+		surf.repaint();
 	    }
 	});
 
@@ -270,4 +292,5 @@ public class Main extends JFrame {
     private BiStateButton pauseButton;
     private BiStateButton drawButton;
     private MultiStateButton drawModeButton;
+    private MultiStateButton eraseBtn;
 }

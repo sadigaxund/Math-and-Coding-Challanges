@@ -76,7 +76,8 @@ public final class HashGrid extends Worker {
 	add_to_list(cell);
 	++count;
     }
-
+    
+  
     public boolean remove(LinkedCell cell) {
 	if (cell == null)
 	    return false;
@@ -113,7 +114,7 @@ public final class HashGrid extends Worker {
 	}
 	return result;
     }
-
+ 
     public LinkedCell getLinkedCellObject(int x, int y) {
 	long pos = fromPoint(x, y);
 	for (LinkedCell cell = full_list.next; cell != full_list; cell = cell.next) {
@@ -207,5 +208,21 @@ public final class HashGrid extends Worker {
 	    reset(toReset[i]);
 	}
     }
+
+    /**
+     * @return the full_list
+     */
+    public LinkedCell getFull_list() {
+        return full_list;
+    }
+
+    /**
+     * @param full_list the full_list to set
+     */
+    public void setFull_list(LinkedCell full_list) {
+        this.full_list = full_list;
+    }
+    
+    
 
 }

@@ -197,8 +197,7 @@ public abstract class SurfaceAdapter extends JPanel
     public void mouseClicked(MouseEvent e) {
 	/* DRAWING... */
 	if (drawable) {
-	    // paused = true;
-	    draw(new Point(e.getX(), e.getY()), mode);
+	    draw(e.getX(), e.getY(), mode);
 	    repaint();
 	    return;
 	}
@@ -228,7 +227,7 @@ public abstract class SurfaceAdapter extends JPanel
 	/* DRAWING... */
 	if (drawable) {
 	    // paused = true;
-	    draw(new Point(e.getX(), e.getY()), mode);
+	    draw(e.getX(), e.getY(), mode);
 	    repaint();
 	    return;
 	}
