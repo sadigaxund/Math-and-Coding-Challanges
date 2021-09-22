@@ -33,13 +33,19 @@ import javax.imageio.ImageIO;
  * 
  **************************************************************************/
 
-public class Experimental {
+public class ImageParser {
     
+    public static final String JAVA_ICON = "java.png";
+    public static final String GOOGLE_ICON = "google.png";
+    public static final String IBM_ICON = "ibm.png";
+    public static final String DOGE_ICON = "doge.png";
+    public static final String PHUT_HON_ICON = "phao.png";
+
     
-    public static String[] getJavaPattern() {
+    public static String[] parseImagePattern(String imagePath) {
 	BufferedImage image = null;
 	try {
-	    image = ImageIO.read(new File("./res/java.png"));
+	    image = ImageIO.read(new File("./res/pixel_art/" + imagePath));
 	} catch (IOException e) {
 	}
 	
@@ -50,9 +56,7 @@ public class Experimental {
 	for(int i = 0; i < height; i++) {
 	    stra[i] = "";
 	    for(int j = 0; j < width; j++) {
-		  
-	            Color c = new Color(image.getRGB(j, i));
-	            if(c.getRed() + c.getGreen() + c.getBlue() == 0) {
+	            if( (image.getRGB(j, i)>>24) == 0x00 ) {
 	        	stra[i] += ".";
 	            }else
 	        	stra[i]+= "O";

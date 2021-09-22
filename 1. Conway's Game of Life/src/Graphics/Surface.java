@@ -56,7 +56,7 @@ public class Surface extends SurfaceAdapter {
     public Surface(int window_width, int window_heigth) {
 	super();
 	setBounds(getX(), getY(), window_width, window_heigth);
-	setPattern(Experimental.getJavaPattern());
+	setPattern(ImageParser.parseImagePattern(ImageParser.PHUT_HON_ICON));
     }
 
     @Override
@@ -241,8 +241,8 @@ public class Surface extends SurfaceAdapter {
 
 	grid_size = size;
 
-	if (grid_size < 4)
-	    grid_size = 4;
+	if (grid_size < 3)
+	    grid_size = 3;
 	if (grid_size > 20)
 	    grid_size = 20;
 
