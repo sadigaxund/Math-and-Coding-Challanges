@@ -1,6 +1,23 @@
 # Conways-Game-of-Life
 The Game of Life, also known simply as Life, is a cellular automaton devised by the British mathematician John Horton Conway in 1970<sup>[1](https://en.wikipedia.org/wiki/Conways_Game_of_Life)</sup>.
 
+The universe of this game consists of an infinite space or grid of cells. The cells have 2 state of existance, either dead or alive. Every cell can affect neigbouring eight cells similar to the game of <a href = "https://github.com/sadigaxund/Minesweeper"> `Minesweeper`</a>. The time unit in this universe is considered as one <u>step</u>. <br>There are some set of rules that each cell must follow after each step. They are:
+<ol>
+  <li>Any live cell with fewer than two live neighbours dies.</li>
+  <li>Any live cell with two or three live neighbours lives on to the next generation.</li>
+  <li>Any live cell with more than three live neighbours dies.</li>
+  <li>Any dead cell with exactly three live neighbours becomes a live cell.</li>
+ </ol>
+ In summary, if we wanted to write it as function, it would be as following:<br>
+ <pre>
+ if number of live neigbours is 2 or 3:
+     set cell live
+ else:
+     kill cell</pre>
+
+The initial pattern that we can set is our <u>seed</u> and the the first step creates universe's <u>first generation</u>.
+
+
 
 ## Presentation
 ### ACORN Pattern
