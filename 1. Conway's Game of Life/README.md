@@ -20,6 +20,10 @@ The initial pattern that we can set is our <u>seed</u> and the the first step cr
 
 
 ## Presentation
+### YouTube 
+<a href = "https://www.youtube.com/watch?v=Gdro5uM6_o8"> video link</a>
+
+
 ### ACORN Pattern
 ![alt text](https://github.com/sadigaxund/Math-and-Coding-Challanges/blob/main/1.%20Conway's%20Game%20of%20Life/res/pre_img/acorn_vid.gif "vid_acorn")
 ### GUN Pattern
