@@ -56,7 +56,7 @@ public class Surface extends SurfaceAdapter {
     public Surface(int window_width, int window_heigth) {
 	super();
 	setBounds(getX(), getY(), window_width, window_heigth);
-	setPattern(ImageParser.parseImagePattern(ImageParser.PHUT_HON_ICON));
+	setPattern(ImageParser.parseImagePattern(ImageParser.DOGE_ICON));
     }
 
     @Override

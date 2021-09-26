@@ -39,7 +39,6 @@ public class ImageParser {
     public static final String GOOGLE_ICON = "google.png";
     public static final String IBM_ICON = "ibm.png";
     public static final String DOGE_ICON = "doge.png";
-    public static final String PHUT_HON_ICON = "phao.png";
 
     
     public static String[] parseImagePattern(String imagePath) {
